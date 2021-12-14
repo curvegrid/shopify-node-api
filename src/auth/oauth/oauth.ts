@@ -1,20 +1,20 @@
 import http from 'http';
 import querystring from 'querystring';
 
-import {v4 as uuidv4} from 'uuid';
+import { v4 as uuidv4 } from 'uuid';
 import Cookies from 'cookies';
 
-import {Context} from '../../context';
+import { Context } from '../../context';
 import nonce from '../../utils/nonce';
 import validateHmac from '../../utils/hmac-validator';
 import safeCompare from '../../utils/safe-compare';
 import decodeSessionToken from '../../utils/decode-session-token';
-import {Session} from '../session';
-import {HttpClient} from '../../clients/http_client/http_client';
-import {DataType, RequestReturn} from '../../clients/http_client/types';
+import { Session } from '../session';
+import { HttpClient } from '../../clients/http_client/http_client';
+import { DataType, RequestReturn } from '../../clients/http_client/types';
 import * as ShopifyErrors from '../../error';
-import {SessionInterface} from '../session/types';
-import {sanitizeShop} from '../../utils/shop-validator';
+import { SessionInterface } from '../session/types';
+import { sanitizeShop } from '../../utils/shop-validator';
 
 import {
   AuthQuery,
@@ -94,24 +94,40 @@ const ShopifyOAuth = {
     request: http.IncomingMessage,
     response: http.ServerResponse,
     query: AuthQuery,
+    isOnline: boolean = true,
   ): Promise<SessionInterface> {
     Context.throwIfUninitialized();
     Context.throwIfPrivateApp('Cannot perform OAuth for private apps');
 
-    const stateFromCookie = getValueFromCookie(
-      request,
-      response,
-      this.STATE_COOKIE_NAME,
-    );
-    deleteCookie(request, response, this.STATE_COOKIE_NAME);
+    let currentSession;
 
-    if (!stateFromCookie) {
-      throw new ShopifyErrors.CookieNotFound(
-        `Cannot complete OAuth process. Could not find an OAuth cookie for shop url: ${query.shop}`,
+    if (isOnline) {
+      const sessionCookie = this.getCookieSessionId(request, response);
+      if (!sessionCookie) {
+        throw new ShopifyErrors.CookieNotFound(
+          `Cannot complete OAuth process. Could not find an OAuth cookie for shop url: ${query.shop}`,
+        );
+      }
+
+      currentSession = await Context.SESSION_STORAGE.loadSession(
+        sessionCookie,
+      );
+    } else {
+      currentSession = new Session(
+        this.getOfflineSessionId(query.shop),
+        query.shop,
+        query.state,
+        false,
       );
     }
 
-    if (!validQuery(query, stateFromCookie)) {
+    if (!currentSession) {
+      throw new ShopifyErrors.SessionNotFound(
+        `Cannot complete OAuth process. No session found for the specified shop url: ${query.shop}`,
+      );
+    }
+
+    if (!validQuery(query, currentSession)) {
       throw new ShopifyErrors.InvalidOAuthError('Invalid OAuth callback.');
     }
 
@@ -142,15 +158,15 @@ const ShopifyOAuth = {
       isOnline,
     );
 
-    if (!Context.IS_EMBEDDED_APP) {
+    if (isOnline) {
       const cookies = new Cookies(request, response, {
         keys: [Context.API_SECRET_KEY],
         secure: true,
       });
 
-      cookies.set(ShopifyOAuth.SESSION_COOKIE_NAME, session.id, {
+      cookies.set(ShopifyOAuth.SESSION_COOKIE_NAME, currentSession.id, {
         signed: true,
-        expires: session.expires,
+        expires: Context.IS_EMBEDDED_APP ? new Date() : currentSession.expires,
         sameSite: 'lax',
         secure: true,
       });
@@ -274,7 +290,7 @@ function getValueFromCookie(
     secure: true,
     keys: [Context.API_SECRET_KEY],
   });
-  return cookies.get(name, {signed: true});
+  return cookies.get(name, { signed: true });
 }
 
 /**
@@ -316,7 +332,7 @@ function createSession(
   if (isOnline) {
     let sessionId: string;
     const responseBody = postResponse.body as OnlineAccessResponse;
-    const {access_token, scope, ...rest} = responseBody; // eslint-disable-line @typescript-eslint/naming-convention
+    const { access_token, scope, ...rest } = responseBody; // eslint-disable-line @typescript-eslint/naming-convention
     const sessionExpiration = new Date(
       Date.now() + responseBody.expires_in * 1000,
     );
@@ -350,4 +366,4 @@ function createSession(
   return session;
 }
 
-export {ShopifyOAuth};
+export { ShopifyOAuth };
