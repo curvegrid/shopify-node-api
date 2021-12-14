@@ -4,15 +4,15 @@ import http from 'http';
 import jwt from 'jsonwebtoken';
 import Cookies from 'cookies';
 
-import {ShopifyOAuth} from '../oauth';
-import {Context} from '../../../context';
+import { ShopifyOAuth } from '../oauth';
+import { Context } from '../../../context';
 import nonce from '../../../utils/nonce';
 import * as ShopifyErrors from '../../../error';
-import {AuthQuery} from '../types';
-import {generateLocalHmac} from '../../../utils/hmac-validator';
-import {JwtPayload} from '../../../utils/decode-session-token';
+import { AuthQuery } from '../types';
+import { generateLocalHmac } from '../../../utils/hmac-validator';
+import { JwtPayload } from '../../../utils/decode-session-token';
 import loadCurrentSession from '../../../utils/load-current-session';
-import {CustomSessionStorage} from '../../session';
+import { CustomSessionStorage } from '../../session';
 
 const VALID_NONCE = 'noncenoncenonce';
 
@@ -178,7 +178,7 @@ describe('validateAuthCallback', () => {
     res = {} as http.ServerResponse;
 
     Cookies.prototype.set.mockImplementation(
-      (cookieName: string, cookieValue: string, options?: {expires: Date}) => {
+      (cookieName: string, cookieValue: string, options?: { expires: Date }) => {
         expect(cookieName).toEqual(
           expect.stringMatching(/^shopify_app_(session|state)/),
         );
@@ -279,8 +279,11 @@ describe('validateAuthCallback', () => {
     ).rejects.toThrow(ShopifyErrors.SessionStorageError);
   });
 
-  test('requests access token for valid callbacks with offline access and creates session', async () => {
-    await ShopifyOAuth.beginAuth(req, res, shop, '/some-callback', false);
+  test('requests access token for valid callbacks with offline access and updates session', async () => {
+    await ShopifyOAuth.beginAuth(req, res, shop, '/some-callback');
+    let session = await Context.SESSION_STORAGE.loadSession(
+      ShopifyOAuth.getOfflineSessionId(shop),
+    );
     const testCallbackQuery: AuthQuery = {
       shop,
       state: `offline_${VALID_NONCE}`,
@@ -298,9 +301,16 @@ describe('validateAuthCallback', () => {
     /* eslint-enable @typescript-eslint/naming-convention */
 
     fetchMock.mockResponse(JSON.stringify(successResponse));
-    await ShopifyOAuth.validateAuthCallback(req, res, testCallbackQuery);
-    expect(cookies.id).toEqual(expect.stringMatching(`offline_${shop}`));
-    const session = await Context.SESSION_STORAGE.loadSession(cookies.id);
+    Cookies.prototype.set.mockImplementation(() => {
+      throw new Error("offline sessions should not depend on cookies");
+    });
+    Cookies.prototype.get.mockImplementation(() => {
+      throw new Error("offline sessions should not depend on cookies");
+    });
+    await ShopifyOAuth.validateAuthCallback(req, res, testCallbackQuery, false);
+    session = await Context.SESSION_STORAGE.loadSession(
+      ShopifyOAuth.getOfflineSessionId(shop),
+    );
 
     expect(session?.accessToken).toBe(successResponse.access_token);
   });
