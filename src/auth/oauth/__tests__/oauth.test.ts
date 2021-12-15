@@ -302,10 +302,10 @@ describe('validateAuthCallback', () => {
 
     fetchMock.mockResponse(JSON.stringify(successResponse));
     Cookies.prototype.set.mockImplementation(() => {
-      throw new Error('offline sessions should not depend on cookies');
+      fail('offline sessions should not depend on cookies');
     });
     Cookies.prototype.get.mockImplementation(() => {
-      throw new Error('offline sessions should not depend on cookies');
+      fail('offline sessions should not depend on cookies');
     });
     await ShopifyOAuth.validateAuthCallback(req, res, testCallbackQuery, false);
     session = await Context.SESSION_STORAGE.loadSession(
@@ -511,99 +511,6 @@ describe('validateAuthCallback', () => {
       returnedSession?.expires?.getTime() as number,
       1,
     );
-
-    const cookieSession = await Context.SESSION_STORAGE.loadSession(cookies.id);
-    expect(cookieSession).not.toBeUndefined();
-  });
-
-  test('does not set an OAuth cookie for offline, embedded apps', async () => {
-    Context.IS_EMBEDDED_APP = true;
-    Context.initialize(Context);
-
-    await ShopifyOAuth.beginAuth(req, res, shop, '/some-callback', false);
-
-    /* eslint-disable @typescript-eslint/naming-convention */
-    const successResponse = {
-      access_token: 'some access token',
-      scope: 'pet_kitties, walk_dogs',
-      expires_in: 525600,
-      associated_user_scope: 'pet_kitties',
-      associated_user: {
-        id: '1',
-        first_name: 'John',
-        last_name: 'Smith',
-        email: 'john@example.com',
-        email_verified: true,
-        account_owner: true,
-        locale: 'en',
-        collaborator: true,
-      },
-    };
-    const testCallbackQuery: AuthQuery = {
-      shop,
-      state: `offline_${VALID_NONCE}`,
-      timestamp: Number(new Date()).toString(),
-      code: 'some random auth code',
-    };
-    /* eslint-enable @typescript-eslint/naming-convention */
-    const expectedHmac = generateLocalHmac(testCallbackQuery);
-    testCallbackQuery.hmac = expectedHmac;
-
-    fetchMock.mockResponse(JSON.stringify(successResponse));
-    const returnedSession = await ShopifyOAuth.validateAuthCallback(
-      req,
-      res,
-      testCallbackQuery,
-    );
-    expect(returnedSession.id).toEqual(ShopifyOAuth.getOfflineSessionId(shop));
-    expect(returnedSession?.expires?.getTime()).toBeUndefined();
-
-    expect(cookies.id).not.toBeDefined();
-  });
-
-  test('properly updates the OAuth cookie for offline, non-embedded apps', async () => {
-    Context.IS_EMBEDDED_APP = false;
-    Context.initialize(Context);
-
-    await ShopifyOAuth.beginAuth(req, res, shop, '/some-callback', false);
-
-    /* eslint-disable @typescript-eslint/naming-convention */
-    const successResponse = {
-      access_token: 'some access token',
-      scope: 'pet_kitties, walk_dogs',
-      expires_in: 525600,
-      associated_user_scope: 'pet_kitties',
-      associated_user: {
-        id: '1',
-        first_name: 'John',
-        last_name: 'Smith',
-        email: 'john@example.com',
-        email_verified: true,
-        account_owner: true,
-        locale: 'en',
-        collaborator: true,
-      },
-    };
-    const testCallbackQuery: AuthQuery = {
-      shop,
-      state: `offline_${VALID_NONCE}`,
-      timestamp: Number(new Date()).toString(),
-      code: 'some random auth code',
-    };
-    /* eslint-enable @typescript-eslint/naming-convention */
-    const expectedHmac = generateLocalHmac(testCallbackQuery);
-    testCallbackQuery.hmac = expectedHmac;
-
-    fetchMock.mockResponse(JSON.stringify(successResponse));
-    const returnedSession = await ShopifyOAuth.validateAuthCallback(
-      req,
-      res,
-      testCallbackQuery,
-    );
-    expect(returnedSession.id).toEqual(cookies.id);
-    expect(returnedSession.id).toEqual(ShopifyOAuth.getOfflineSessionId(shop));
-    expect(cookies?.expires?.getTime()).toBeUndefined();
-    expect(returnedSession?.expires?.getTime()).toBeUndefined();
 
     const cookieSession = await Context.SESSION_STORAGE.loadSession(cookies.id);
     expect(cookieSession).not.toBeUndefined();

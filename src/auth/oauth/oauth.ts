@@ -148,14 +148,37 @@ const ShopifyOAuth = {
     const client = new HttpClient(cleanShop);
     const postResponse = await client.post(postParams);
 
-    const session: Session = createSession(
-      postResponse,
-      cleanShop,
-      stateFromCookie,
-      isOnline,
-    );
-
     if (isOnline) {
+      const responseBody = postResponse.body as OnlineAccessResponse;
+      const { access_token, scope, ...rest } = responseBody; // eslint-disable-line @typescript-eslint/naming-convention
+      const sessionExpiration = new Date(
+        Date.now() + responseBody.expires_in * 1000,
+      );
+      currentSession.accessToken = access_token;
+      currentSession.expires = sessionExpiration;
+      currentSession.scope = scope;
+      currentSession.onlineAccessInfo = rest;
+
+      // For an online session in an embedded app, we no longer want the cookie session so we delete it
+      if (Context.IS_EMBEDDED_APP) {
+        // If this is an online session for an embedded app, replace the online session with a JWT session
+        const onlineInfo = currentSession.onlineAccessInfo as OnlineAccessInfo;
+        const jwtSessionId = this.getJwtSessionId(
+          currentSession.shop,
+          `${onlineInfo.associated_user.id}`,
+        );
+        const jwtSession = Session.cloneSession(currentSession, jwtSessionId);
+
+        const sessionDeleted = await Context.SESSION_STORAGE.deleteSession(
+          currentSession.id,
+        );
+        if (!sessionDeleted) {
+          throw new ShopifyErrors.SessionStorageError(
+            'OAuth Session could not be deleted. Please check your session storage functionality.',
+          );
+        }
+        currentSession = jwtSession;
+      }
       const cookies = new Cookies(request, response, {
         keys: [Context.API_SECRET_KEY],
         secure: true,
@@ -167,6 +190,11 @@ const ShopifyOAuth = {
         sameSite: 'lax',
         secure: true,
       });
+    } else {
+      // Offline sessions (embedded / non-embedded) will use the same id so they don't need to be updated
+      const responseBody = postResponse.body as AccessTokenResponse;
+      currentSession.accessToken = responseBody.access_token;
+      currentSession.scope = responseBody.scope;
     }
 
     const sessionStored = await Context.SESSION_STORAGE.storeSession(session);
