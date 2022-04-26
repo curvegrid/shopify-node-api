@@ -105,25 +105,28 @@ const ShopifyOAuth = {
     request: http.IncomingMessage,
     response: http.ServerResponse,
     query: AuthQuery,
+    isOnline = true,
   ): Promise<SessionInterface> {
     Context.throwIfUninitialized();
     Context.throwIfPrivateApp('Cannot perform OAuth for private apps');
 
-    const cookies = new Cookies(request, response, {
-      keys: [Context.API_SECRET_KEY],
-      secure: true,
-    });
+    let currentSession;
 
-    const sessionCookie = this.getCookieSessionId(request, response);
-    if (!sessionCookie) {
-      throw new ShopifyErrors.CookieNotFound(
-        `Cannot complete OAuth process. Could not find an OAuth cookie for shop url: ${query.shop}`,
+    if (isOnline) {
+      const sessionCookie = this.getCookieSessionId(request, response);
+      if (!sessionCookie) {
+        throw new ShopifyErrors.CookieNotFound(
+          `Cannot complete OAuth process. Could not find an OAuth cookie for shop url: ${query.shop}`,
+        );
+      }
+
+      currentSession = await Context.SESSION_STORAGE.loadSession(sessionCookie);
+    } else {
+      currentSession = await Context.SESSION_STORAGE.loadSession(
+        ShopifyOAuth.getOfflineSessionId(query.shop),
       );
     }
 
-    let currentSession = await Context.SESSION_STORAGE.loadSession(
-      sessionCookie,
-    );
     if (!currentSession) {
       throw new ShopifyErrors.SessionNotFound(
         `Cannot complete OAuth process. No session found for the specified shop url: ${query.shop}`,
@@ -182,19 +185,23 @@ const ShopifyOAuth = {
         }
         currentSession = jwtSession;
       }
+      const cookies = new Cookies(request, response, {
+        keys: [Context.API_SECRET_KEY],
+        secure: true,
+      });
+
+      cookies.set(ShopifyOAuth.SESSION_COOKIE_NAME, currentSession.id, {
+        signed: true,
+        expires: Context.IS_EMBEDDED_APP ? new Date() : currentSession.expires,
+        sameSite: 'lax',
+        secure: true,
+      });
     } else {
       // Offline sessions (embedded / non-embedded) will use the same id so they don't need to be updated
       const responseBody = postResponse.body as AccessTokenResponse;
       currentSession.accessToken = responseBody.access_token;
       currentSession.scope = responseBody.scope;
     }
-
-    cookies.set(ShopifyOAuth.SESSION_COOKIE_NAME, currentSession.id, {
-      signed: true,
-      expires: Context.IS_EMBEDDED_APP ? new Date() : currentSession.expires,
-      sameSite: 'lax',
-      secure: true,
-    });
 
     const sessionStored = await Context.SESSION_STORAGE.storeSession(
       currentSession,
