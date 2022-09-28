@@ -1,7 +1,6 @@
 import http from 'http';
 import querystring from 'querystring';
 
-import { v4 as uuidv4 } from 'uuid';
 import Cookies from 'cookies';
 
 import { Context } from '../../context';
@@ -11,7 +10,7 @@ import safeCompare from '../../utils/safe-compare';
 import decodeSessionToken from '../../utils/decode-session-token';
 import { Session } from '../session';
 import { HttpClient } from '../../clients/http_client/http_client';
-import { DataType, RequestReturn } from '../../clients/http_client/types';
+import { DataType } from '../../clients/http_client/types';
 import * as ShopifyErrors from '../../error';
 import { SessionInterface } from '../session/types';
 import { sanitizeShop } from '../../utils/shop-validator';
@@ -126,8 +125,6 @@ const ShopifyOAuth = {
       throw new ShopifyErrors.InvalidOAuthError('Invalid OAuth callback.');
     }
 
-    const isOnline = stateFromCookie.startsWith('online_');
-
     /* eslint-disable @typescript-eslint/naming-convention */
     const body = {
       client_id: Context.API_KEY,
@@ -195,14 +192,16 @@ const ShopifyOAuth = {
       currentSession.scope = responseBody.scope;
     }
 
-    const sessionStored = await Context.SESSION_STORAGE.storeSession(session);
+    const sessionStored = await Context.SESSION_STORAGE.storeSession(
+      currentSession,
+    );
     if (!sessionStored) {
       throw new ShopifyErrors.SessionStorageError(
-        'Session could not be saved. Please check your session storage functionality.',
+        'OAuth Session could not be saved. Please check your session storage functionality.',
       );
     }
 
-    return session;
+    return currentSession;
   },
 
   /**
@@ -293,8 +292,10 @@ const ShopifyOAuth = {
  * @param query Current HTTP Request Query
  * @param stateFromCookie state value from the current cookie
  */
-function validQuery(query: AuthQuery, stateFromCookie: string): boolean {
-  return validateHmac(query) && safeCompare(query.state, stateFromCookie);
+function validQuery(query: AuthQuery, session: Session): boolean {
+  return (
+    validateHmac(query) && safeCompare(query.state, session.state as string)
+  );
 }
 
 /**
@@ -314,79 +315,6 @@ function getValueFromCookie(
     keys: [Context.API_SECRET_KEY],
   });
   return cookies.get(name, { signed: true });
-}
-
-/**
- * Loads a given value from the cookie
- *
- * @param request HTTP request object
- * @param response HTTP response object
- * @param name Name of the cookie to load
- */
-function deleteCookie(
-  request: http.IncomingMessage,
-  response: http.ServerResponse,
-  name: string,
-): void {
-  const cookies = new Cookies(request, response, {
-    secure: true,
-    keys: [Context.API_SECRET_KEY],
-  });
-  cookies.set(name);
-}
-
-/**
- * Creates a new session from the response from the access token request.
- *
- * @param postResponse Response from the access token request
- * @param shop Shop url: {shop}.myshopify.com
- * @param stateFromCookie State from the cookie received by the OAuth callback
- * @param isOnline Boolean indicating if the access token is for online access
- * @returns SessionInterface
- */
-function createSession(
-  postResponse: RequestReturn,
-  shop: string,
-  stateFromCookie: string,
-  isOnline: boolean,
-): SessionInterface {
-  let session: Session;
-
-  if (isOnline) {
-    let sessionId: string;
-    const responseBody = postResponse.body as OnlineAccessResponse;
-    const { access_token, scope, ...rest } = responseBody; // eslint-disable-line @typescript-eslint/naming-convention
-    const sessionExpiration = new Date(
-      Date.now() + responseBody.expires_in * 1000,
-    );
-
-    if (Context.IS_EMBEDDED_APP) {
-      sessionId = ShopifyOAuth.getJwtSessionId(
-        shop,
-        `${(rest as OnlineAccessInfo).associated_user.id}`,
-      );
-    } else {
-      sessionId = uuidv4();
-    }
-
-    session = new Session(sessionId, shop, stateFromCookie, isOnline);
-    session.accessToken = access_token;
-    session.scope = scope;
-    session.expires = sessionExpiration;
-    session.onlineAccessInfo = rest;
-  } else {
-    const responseBody = postResponse.body as AccessTokenResponse;
-    session = new Session(
-      ShopifyOAuth.getOfflineSessionId(shop),
-      shop,
-      stateFromCookie,
-      isOnline,
-    );
-    session.accessToken = responseBody.access_token;
-    session.scope = responseBody.scope;
-  }
-
-  return session;
 }
 
 export { ShopifyOAuth };
