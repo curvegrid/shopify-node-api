@@ -29,7 +29,37 @@ describe('HTTP client', () => {
     await expect(client.get({path: '/url/path'})).resolves.toEqual(
       buildExpectedResponse(successResponse),
     );
+    expect({
+      method: 'GET',
+      domain,
+      path: '/url/path',
+      headers: {
+        'User-Agent': expect.stringContaining('Shopify API Library v'),
+      },
+    }).toMatchMadeHttpRequest();
+  });
+
+  it('allows the body to contain non-json 2xx response without dying', () => {
+    const client = new HttpClient(domain);
+    fetchMock.mockResponseOnce('not a json object');
+
+    const request = client.get({path: '/url/path'});
+
     expect({method: 'GET', domain, path: '/url/path'}).toMatchMadeHttpRequest();
+    expect(request).resolves.toMatchObject({body: {}});
+  });
+
+  it('handles non-json non-2xx response', () => {
+    const client = new HttpClient(domain);
+    fetchMock.mockResponses([
+      'not a json object',
+      {status: 404, statusText: 'not found', headers: {}},
+    ]);
+
+    const request = client.get({path: '/url/path'});
+
+    expect({method: 'GET', domain, path: '/url/path'}).toMatchMadeHttpRequest();
+    expect(request).rejects.toBeInstanceOf(ShopifyErrors.HttpResponseError);
   });
 
   it('can make POST request with type JSON', async () => {
@@ -55,7 +85,11 @@ describe('HTTP client', () => {
       method: 'POST',
       domain,
       path: '/url/path',
-      headers: {'Content-Type': DataType.JSON.toString()},
+      headers: {
+        'Content-Length': JSON.stringify(postData).length,
+        'Content-Type': DataType.JSON.toString(),
+        'User-Agent': expect.stringContaining('Shopify API Library v'),
+      },
       data: JSON.stringify(postData),
     }).toMatchMadeHttpRequest();
   });
@@ -224,7 +258,11 @@ describe('HTTP client', () => {
       method: 'PUT',
       domain,
       path: '/url/path/123',
-      headers: {'Content-Type': DataType.JSON.toString()},
+      headers: {
+        'Content-Length': JSON.stringify(putData).length,
+        'Content-Type': DataType.JSON.toString(),
+        'User-Agent': expect.stringContaining('Shopify API Library v'),
+      },
       data: JSON.stringify(putData),
     }).toMatchMadeHttpRequest();
   });
@@ -241,6 +279,9 @@ describe('HTTP client', () => {
       method: 'DELETE',
       domain,
       path: '/url/path/123',
+      headers: {
+        'User-Agent': expect.stringContaining('Shopify API Library v'),
+      },
     }).toMatchMadeHttpRequest();
   });
 
@@ -544,6 +585,10 @@ describe('HTTP client', () => {
     const client = new HttpClient(domain);
     console.warn = jest.fn();
 
+    const postBody = {
+      query: 'some query',
+    };
+
     fetchMock.mockResponses(
       [
         JSON.stringify({
@@ -560,9 +605,7 @@ describe('HTTP client', () => {
       [
         JSON.stringify({
           message: 'Some deprecated post request',
-          body: {
-            query: 'some query',
-          },
+          body: postBody,
         }),
         {
           status: 200,
@@ -584,12 +627,13 @@ describe('HTTP client', () => {
     await client.post({
       path: '/url/path',
       type: DataType.JSON,
-      data: {query: 'some query'},
+      data: postBody,
     });
 
     expect(console.warn).toHaveBeenCalledWith('API Deprecation Notice:', {
       message: 'This API endpoint has been deprecated',
       path: 'https://test-shop.myshopify.io/url/path',
+      body: `${JSON.stringify(postBody)}...`,
     });
   });
 

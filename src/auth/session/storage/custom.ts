@@ -2,6 +2,7 @@ import {Session} from '../session';
 import {SessionInterface} from '../types';
 import {SessionStorage} from '../session_storage';
 import * as ShopifyErrors from '../../../error';
+import {sanitizeShop} from '../../../utils/shop-validator';
 
 export class CustomSessionStorage implements SessionStorage {
   constructor(
@@ -10,10 +11,16 @@ export class CustomSessionStorage implements SessionStorage {
       id: string,
     ) => Promise<SessionInterface | {[key: string]: unknown} | undefined>,
     readonly deleteCallback: (id: string) => Promise<boolean>,
+    readonly deleteSessionsCallback?: (ids: string[]) => Promise<boolean>,
+    readonly findSessionsByShopCallback?: (
+      shop: string,
+    ) => Promise<SessionInterface[]>,
   ) {
     this.storeCallback = storeCallback;
     this.loadCallback = loadCallback;
     this.deleteCallback = deleteCallback;
+    this.deleteSessionsCallback = deleteSessionsCallback;
+    this.findSessionsByShopCallback = findSessionsByShopCallback;
   }
 
   public async storeSession(session: SessionInterface): Promise<boolean> {
@@ -55,6 +62,7 @@ export class CustomSessionStorage implements SessionStorage {
           session.expires = new Date(session.expires);
         }
 
+        Object.setPrototypeOf(session, Session.prototype);
         return session as SessionInterface;
       } else {
         throw new ShopifyErrors.SessionStorageError(
@@ -76,5 +84,43 @@ export class CustomSessionStorage implements SessionStorage {
         `CustomSessionStorage failed to delete a session. Error Details: ${error}`,
       );
     }
+  }
+
+  public async deleteSessions(ids: string[]): Promise<boolean> {
+    if (this.deleteSessionsCallback) {
+      try {
+        return await this.deleteSessionsCallback(ids);
+      } catch (error) {
+        throw new ShopifyErrors.SessionStorageError(
+          `CustomSessionStorage failed to delete array of sessions. Error Details: ${error}`,
+        );
+      }
+    } else {
+      console.warn(
+        `CustomSessionStorage failed to delete array of sessions. Error Details: deleteSessionsCallback not defined.`,
+      );
+    }
+    return false;
+  }
+
+  public async findSessionsByShop(shop: string): Promise<SessionInterface[]> {
+    const cleanShop = sanitizeShop(shop, true)!;
+
+    let sessions: SessionInterface[] = [];
+
+    if (this.findSessionsByShopCallback) {
+      try {
+        sessions = await this.findSessionsByShopCallback(cleanShop);
+      } catch (error) {
+        throw new ShopifyErrors.SessionStorageError(
+          `CustomSessionStorage failed to find sessions by shop. Error Details: ${error}`,
+        );
+      }
+    } else {
+      console.warn(
+        `CustomSessionStorage failed to find sessions by shop. Error Details: findSessionsByShopCallback not defined.`,
+      );
+    }
+    return sessions;
   }
 }

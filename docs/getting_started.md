@@ -103,6 +103,7 @@ API_KEY={api key}               # Your API key
 API_SECRET_KEY={api secret key} # Your API secret key
 SCOPES={scopes}                 # Your app's required scopes
 HOST={your app's host}          # Your app's host, without the protocol prefix (in this case we used an `ngrok` tunnel to provide a secure connection to our localhost)
+HOST_SCHEME={your app's URI scheme} # Either http or https. Note http is intended for local development with localhost.
 ```
 
 ## Set up Context
@@ -124,13 +125,14 @@ import querystring from 'querystring';
 import Shopify, { ApiVersion } from '@shopify/shopify-api';
 require('dotenv').config();
 
-const { API_KEY, API_SECRET_KEY, SCOPES, SHOP, HOST } = process.env
+const { API_KEY, API_SECRET_KEY, SCOPES, SHOP, HOST, HOST_SCHEME } = process.env;
 
 Shopify.Context.initialize({
   API_KEY,
   API_SECRET_KEY,
   SCOPES: [SCOPES],
-  HOST_NAME: HOST.replace(/https:\/\//, ""),
+  HOST_NAME: HOST.replace(/https?:\/\//, ""),
+  HOST_SCHEME,
   IS_EMBEDDED_APP: {boolean},
   API_VERSION: ApiVersion.{version} // all supported versions are available, as well as "unstable" and "unversioned"
 });
@@ -183,13 +185,14 @@ require('dotenv').config();
 
 const app = express();
 
-const { API_KEY, API_SECRET_KEY, SCOPES, SHOP, HOST } = process.env;
+const { API_KEY, API_SECRET_KEY, SCOPES, SHOP, HOST, HOST_SCHEME } = process.env;
 
 Shopify.Context.initialize({
   API_KEY,
   API_SECRET_KEY,
   SCOPES: [SCOPES],
-  HOST_NAME: HOST.replace(/https:\/\//, ""),
+  HOST_NAME: HOST.replace(/https?:\/\//, ""),
+  HOST_SCHEME,
   IS_EMBEDDED_APP: {boolean},
   API_VERSION: ApiVersion.{version} // all supported versions are available, as well as "unstable" and "unversioned"
 });

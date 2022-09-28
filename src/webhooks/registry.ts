@@ -199,6 +199,12 @@ function buildQuery(
   `;
 }
 
+const gdprTopics: string[] = [
+  'CUSTOMERS_DATA_REQUEST',
+  'CUSTOMERS_REDACT',
+  'SHOP_REDACT',
+];
+
 const WebhooksRegistry: RegistryInterface = {
   webhookRegistry: {},
 
@@ -233,17 +239,44 @@ const WebhooksRegistry: RegistryInterface = {
     deliveryMethod = DeliveryMethod.Http,
   }: RegisterOptions): Promise<RegisterReturn> {
     const registerReturn: RegisterReturn = {};
+
+    if (gdprTopics.includes(topic)) {
+      registerReturn[topic] = {
+        success: false,
+        result: {
+          errors: [
+            {
+              message: `GDPR topic '${topic}' cannot be registered here. Please set the appropriate webhook endpoint in the 'GDPR mandatory webhooks' section of 'App setup' in the Partners Dashboard`,
+            },
+          ],
+        },
+      };
+
+      return registerReturn;
+    }
+
     validateDeliveryMethod(deliveryMethod);
     const client = new GraphqlClient(shop, accessToken);
     const address =
       deliveryMethod === DeliveryMethod.Http
-        ? `https://${Context.HOST_NAME}${path}`
+        ? `${Context.HOST_SCHEME}://${Context.HOST_NAME}${path}`
         : path;
-    const checkResult = (await client.query({
-      data: buildCheckQuery(topic),
-    })) as {body: WebhookCheckResponse};
+
+    let checkResult;
+    try {
+      checkResult = await client.query<WebhookCheckResponse>({
+        data: buildCheckQuery(topic),
+      });
+    } catch (error) {
+      const result =
+        error instanceof ShopifyErrors.GraphqlQueryError ? error.response : {};
+      registerReturn[topic] = {success: false, result};
+      return registerReturn;
+    }
+
     let webhookId: string | undefined;
     let mustRegister = true;
+
     if (checkResult.body.data.webhookSubscriptions.edges.length) {
       const {node} = checkResult.body.data.webhookSubscriptions.edges[0];
       let endpointAddress = '';
@@ -391,13 +424,13 @@ const WebhooksRegistry: RegistryInterface = {
               responseError = error;
             }
           } else {
-            statusCode = StatusCode.Forbidden;
+            statusCode = StatusCode.NotFound;
             responseError = new ShopifyErrors.InvalidWebhookError(
               `No webhook is registered for topic ${topic}`,
             );
           }
         } else {
-          statusCode = StatusCode.Forbidden;
+          statusCode = StatusCode.Unauthorized;
           responseError = new ShopifyErrors.InvalidWebhookError(
             `Could not validate request for topic ${topic}`,
           );
@@ -426,4 +459,10 @@ const WebhooksRegistry: RegistryInterface = {
   },
 };
 
-export {WebhooksRegistry, RegistryInterface, buildCheckQuery, buildQuery};
+export {
+  WebhooksRegistry,
+  RegistryInterface,
+  buildCheckQuery,
+  buildQuery,
+  gdprTopics,
+};

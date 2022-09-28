@@ -1,4 +1,3 @@
-import {MissingRequiredArgument} from '../../error';
 import {Context} from '../../context';
 import {ShopifyHeader} from '../../base-types';
 import {HttpClient} from '../http_client/http_client';
@@ -27,9 +26,9 @@ export class GraphqlClient {
     this.client = new HttpClient(this.domain);
   }
 
-  async query(params: GraphqlParams): Promise<RequestReturn> {
+  async query<T = unknown>(params: GraphqlParams): Promise<RequestReturn<T>> {
     if (params.data.length === 0) {
-      throw new MissingRequiredArgument('Query missing.');
+      throw new ShopifyErrors.MissingRequiredArgument('Query missing.');
     }
 
     const accessTokenHeader = this.getAccessTokenHeader();
@@ -48,7 +47,15 @@ export class GraphqlClient {
       dataType = DataType.GraphQL;
     }
 
-    return this.client.post({path, type: dataType, ...params});
+    const result = await this.client.post<T>({path, type: dataType, ...params});
+
+    if ((result.body as unknown as {[key: string]: unknown}).errors) {
+      throw new ShopifyErrors.GraphqlQueryError({
+        message: 'GraphQL query returned errors',
+        response: result.body as unknown as {[key: string]: unknown},
+      });
+    }
+    return result;
   }
 
   protected getAccessTokenHeader(): AccessTokenHeader {

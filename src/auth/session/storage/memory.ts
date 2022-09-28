@@ -1,5 +1,6 @@
 import {SessionInterface} from '../types';
 import {SessionStorage} from '../session_storage';
+import {sanitizeShop} from '../../../utils/shop-validator';
 
 export class MemorySessionStorage implements SessionStorage {
   private sessions: {[id: string]: SessionInterface} = {};
@@ -18,5 +19,19 @@ export class MemorySessionStorage implements SessionStorage {
       delete this.sessions[id];
     }
     return true;
+  }
+
+  public async deleteSessions(ids: string[]): Promise<boolean> {
+    ids.forEach((id) => delete this.sessions[id]);
+    return true;
+  }
+
+  public async findSessionsByShop(shop: string): Promise<SessionInterface[]> {
+    const cleanShop = sanitizeShop(shop, true)!;
+
+    const results = Object.values(this.sessions).filter(
+      (session) => session.shop === cleanShop,
+    );
+    return results;
   }
 }

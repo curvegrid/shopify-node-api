@@ -7,6 +7,7 @@ export class ShopifyError extends Error {
 
 export class InvalidHmacError extends ShopifyError {}
 export class InvalidShopError extends ShopifyError {}
+export class InvalidHostError extends ShopifyError {}
 export class InvalidJwtError extends ShopifyError {}
 export class MissingJwtTokenError extends ShopifyError {}
 
@@ -64,6 +65,20 @@ export class HttpThrottlingError extends HttpRetriableError {
 }
 
 export class RestResourceError extends ShopifyError {}
+export class GraphqlQueryError extends ShopifyError {
+  readonly response: {[key: string]: unknown};
+
+  public constructor({
+    message,
+    response,
+  }: {
+    message: string;
+    response: {[key: string]: unknown};
+  }) {
+    super(message);
+    this.response = response;
+  }
+}
 
 export class InvalidOAuthError extends ShopifyError {}
 export class SessionNotFound extends ShopifyError {}
@@ -75,3 +90,16 @@ export class SessionStorageError extends ShopifyError {}
 
 export class MissingRequiredArgument extends ShopifyError {}
 export class UnsupportedClientType extends ShopifyError {}
+
+export class InvalidRequestError extends ShopifyError {}
+
+export class BillingError extends ShopifyError {
+  readonly errorData: any;
+
+  public constructor({message, errorData}: {message: string; errorData: any}) {
+    super(message);
+
+    this.message = message;
+    this.errorData = errorData;
+  }
+}
