@@ -3,17 +3,17 @@ import querystring from 'querystring';
 
 import Cookies from 'cookies';
 
-import { Context } from '../../context';
+import {Context} from '../../context';
 import nonce from '../../utils/nonce';
 import validateHmac from '../../utils/hmac-validator';
 import safeCompare from '../../utils/safe-compare';
 import decodeSessionToken from '../../utils/decode-session-token';
-import { Session } from '../session';
-import { HttpClient } from '../../clients/http_client/http_client';
-import { DataType } from '../../clients/http_client/types';
+import {Session} from '../session';
+import {HttpClient} from '../../clients/http_client/http_client';
+import {DataType} from '../../clients/http_client/types';
 import * as ShopifyErrors from '../../error';
-import { SessionInterface } from '../session/types';
-import { sanitizeShop } from '../../utils/shop-validator';
+import {SessionInterface} from '../session/types';
+import {sanitizeShop} from '../../utils/shop-validator';
 
 import {
   AuthQuery,
@@ -145,7 +145,7 @@ const ShopifyOAuth = {
 
     if (currentSession.isOnline) {
       const responseBody = postResponse.body as OnlineAccessResponse;
-      const { access_token, scope, ...rest } = responseBody; // eslint-disable-line @typescript-eslint/naming-convention
+      const {access_token, scope, ...rest} = responseBody; // eslint-disable-line @typescript-eslint/naming-convention
       const sessionExpiration = new Date(
         Date.now() + responseBody.expires_in * 1000,
       );
@@ -314,7 +314,7 @@ function getValueFromCookie(
     secure: true,
     keys: [Context.API_SECRET_KEY],
   });
-  return cookies.get(name, { signed: true });
+  return cookies.get(name, {signed: true});
 }
 
-export { ShopifyOAuth };
+export {ShopifyOAuth};

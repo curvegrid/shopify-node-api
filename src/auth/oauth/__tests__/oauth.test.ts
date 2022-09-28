@@ -4,15 +4,15 @@ import http from 'http';
 import jwt from 'jsonwebtoken';
 import Cookies from 'cookies';
 
-import { ShopifyOAuth } from '../oauth';
-import { Context } from '../../../context';
+import {ShopifyOAuth} from '../oauth';
+import {Context} from '../../../context';
 import nonce from '../../../utils/nonce';
 import * as ShopifyErrors from '../../../error';
-import { AuthQuery } from '../types';
-import { generateLocalHmac } from '../../../utils/hmac-validator';
-import { JwtPayload } from '../../../utils/decode-session-token';
+import {AuthQuery} from '../types';
+import {generateLocalHmac} from '../../../utils/hmac-validator';
+import {JwtPayload} from '../../../utils/decode-session-token';
 import loadCurrentSession from '../../../utils/load-current-session';
-import { CustomSessionStorage } from '../../session';
+import {CustomSessionStorage} from '../../session';
 
 const VALID_NONCE = 'noncenoncenonce';
 
@@ -178,7 +178,7 @@ describe('validateAuthCallback', () => {
     res = {} as http.ServerResponse;
 
     Cookies.prototype.set.mockImplementation(
-      (cookieName: string, cookieValue: string, options?: { expires: Date }) => {
+      (cookieName: string, cookieValue: string, options?: {expires: Date}) => {
         expect(cookieName).toEqual(
           expect.stringMatching(/^shopify_app_(session|state)/),
         );
