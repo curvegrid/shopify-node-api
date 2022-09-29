@@ -1,6 +1,7 @@
 import http from 'http';
 import querystring from 'querystring';
 
+import {v4 as uuidv4} from 'uuid';
 import Cookies from 'cookies';
 
 import {Context} from '../../context';
@@ -24,7 +25,6 @@ import {
 
 const ShopifyOAuth = {
   SESSION_COOKIE_NAME: 'shopify_app_session',
-  STATE_COOKIE_NAME: 'shopify_app_state',
 
   /**
    * Initializes a session and cookie for the OAuth process, and returns the necessary authorization url.
@@ -46,16 +46,31 @@ const ShopifyOAuth = {
   ): Promise<string> {
     Context.throwIfUninitialized();
     Context.throwIfPrivateApp('Cannot perform OAuth for private apps');
-    const cleanShop = sanitizeShop(shop, true)!;
+    const cleanShop = sanitizeShop(shop)!;
 
     const cookies = new Cookies(request, response, {
       keys: [Context.API_SECRET_KEY],
       secure: true,
     });
 
-    const state = isOnline ? `online_${nonce()}` : `offline_${nonce()}`;
+    const state = nonce();
 
-    cookies.set(ShopifyOAuth.STATE_COOKIE_NAME, state, {
+    const session = new Session(
+      isOnline ? uuidv4() : this.getOfflineSessionId(cleanShop),
+      cleanShop,
+      state,
+      isOnline,
+    );
+
+    const sessionStored = await Context.SESSION_STORAGE.storeSession(session);
+
+    if (!sessionStored) {
+      throw new ShopifyErrors.SessionStorageError(
+        'OAuth Session could not be saved. Please check your session storage functionality.',
+      );
+    }
+
+    cookies.set(ShopifyOAuth.SESSION_COOKIE_NAME, session.id, {
       signed: true,
       expires: new Date(Date.now() + 60000),
       sameSite: 'lax',
@@ -138,7 +153,7 @@ const ShopifyOAuth = {
       type: DataType.JSON,
       data: body,
     };
-    const cleanShop = sanitizeShop(query.shop, true)!;
+    const cleanShop = sanitizeShop(currentSession.shop)!;
 
     const client = new HttpClient(cleanShop);
     const postResponse = await client.post(postParams);
@@ -224,7 +239,7 @@ const ShopifyOAuth = {
    * @param userId Current actor id
    */
   getJwtSessionId(shop: string, userId: string): string {
-    return `${sanitizeShop(shop, true)}_${userId}`;
+    return `${sanitizeShop(shop)}_${userId}`;
   },
 
   /**
@@ -233,7 +248,7 @@ const ShopifyOAuth = {
    * @param shop Shopify shop domain
    */
   getOfflineSessionId(shop: string): string {
-    return `offline_${sanitizeShop(shop, true)}`;
+    return `offline_${sanitizeShop(shop)}`;
   },
 
   /**
@@ -275,11 +290,7 @@ const ShopifyOAuth = {
     // JWT.
     if (!currentSessionId) {
       // We still want to get the offline session id from the cookie to make sure it's validated
-      currentSessionId = getValueFromCookie(
-        request,
-        response,
-        this.SESSION_COOKIE_NAME,
-      );
+      currentSessionId = this.getCookieSessionId(request, response);
     }
 
     return currentSessionId;
@@ -290,7 +301,7 @@ const ShopifyOAuth = {
  * Uses the validation utils validateHmac, and safeCompare to assess whether the callback is valid.
  *
  * @param query Current HTTP Request Query
- * @param stateFromCookie state value from the current cookie
+ * @param session Current session
  */
 function validQuery(query: AuthQuery, session: Session): boolean {
   return (
