@@ -11,10 +11,18 @@ export declare const Shopify: {
         getOfflineSessionId(shop: string): string;
         getCurrentSessionId(request: import("http").IncomingMessage, response: import("http").ServerResponse, isOnline?: boolean): string | undefined;
     };
+    Billing: {
+        check: typeof import("./billing/check").check;
+    };
     Session: {
         Session: typeof import("./auth/session/session").Session;
         MemorySessionStorage: typeof import("./auth/session").MemorySessionStorage;
         CustomSessionStorage: typeof import("./auth/session").CustomSessionStorage;
+        MySQLSessionStorage: typeof import("./auth/session").MySQLSessionStorage;
+        MongoDBSessionStorage: typeof import("./auth/session").MongoDBSessionStorage;
+        PostgreSQLSessionStorage: typeof import("./auth/session").PostgreSQLSessionStorage;
+        RedisSessionStorage: typeof import("./auth/session").RedisSessionStorage;
+        SQLiteSessionStorage: typeof import("./auth/session").SQLiteSessionStorage;
     };
     Clients: {
         Rest: typeof import("./clients/rest/rest_client").RestClient;
@@ -32,9 +40,11 @@ export declare const Shopify: {
         safeCompare: typeof import("./utils/safe-compare").default;
         storeSession: typeof import("./utils/store-session").default;
         validateHmac: typeof import("./utils/hmac-validator").default;
-        validateShop: typeof import("./utils/shop-validator").default;
+        sanitizeShop: typeof import("./utils/shop-validator").sanitizeShop;
+        sanitizeHost: typeof import("./utils/shop-validator").sanitizeHost;
         versionCompatible: typeof import("./utils/version-compatible").default;
         withSession: typeof import("./utils/with-session").default;
+        getEmbeddedAppUrl: typeof import("./utils/get-embedded-app-url").default;
     };
     Webhooks: {
         Registry: import("./webhooks/registry").RegistryInterface;

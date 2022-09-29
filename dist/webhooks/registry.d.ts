@@ -59,6 +59,7 @@ interface RegistryInterface {
 }
 declare function buildCheckQuery(topic: string): string;
 declare function buildQuery(topic: string, address: string, deliveryMethod?: DeliveryMethod, webhookId?: string): string;
+declare const gdprTopics: string[];
 declare const WebhooksRegistry: RegistryInterface;
-export { WebhooksRegistry, RegistryInterface, buildCheckQuery, buildQuery };
+export { WebhooksRegistry, RegistryInterface, buildCheckQuery, buildQuery, gdprTopics, };
 //# sourceMappingURL=registry.d.ts.map

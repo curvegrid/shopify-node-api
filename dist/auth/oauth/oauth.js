@@ -14,6 +14,7 @@ var session_1 = require("../session");
 var http_client_1 = require("../../clients/http_client/http_client");
 var types_1 = require("../../clients/http_client/types");
 var ShopifyErrors = tslib_1.__importStar(require("../../error"));
+var shop_validator_1 = require("../../utils/shop-validator");
 var ShopifyOAuth = {
     SESSION_COOKIE_NAME: 'shopify_app_session',
     /**
@@ -30,18 +31,19 @@ var ShopifyOAuth = {
     beginAuth: function (request, response, shop, redirectPath, isOnline) {
         if (isOnline === void 0) { isOnline = true; }
         return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var cookies, state, session, sessionStored, query, queryString;
+            var cleanShop, cookies, state, session, sessionStored, query, queryString;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         context_1.Context.throwIfUninitialized();
                         context_1.Context.throwIfPrivateApp('Cannot perform OAuth for private apps');
+                        cleanShop = (0, shop_validator_1.sanitizeShop)(shop);
                         cookies = new cookies_1.default(request, response, {
                             keys: [context_1.Context.API_SECRET_KEY],
                             secure: true,
                         });
-                        state = nonce_1.default();
-                        session = new session_1.Session(isOnline ? uuid_1.v4() : this.getOfflineSessionId(shop), shop, state, isOnline);
+                        state = (0, nonce_1.default)();
+                        session = new session_1.Session(isOnline ? (0, uuid_1.v4)() : this.getOfflineSessionId(cleanShop), cleanShop, state, isOnline);
                         return [4 /*yield*/, context_1.Context.SESSION_STORAGE.storeSession(session)];
                     case 1:
                         sessionStored = _a.sent();
@@ -57,12 +59,12 @@ var ShopifyOAuth = {
                         query = {
                             client_id: context_1.Context.API_KEY,
                             scope: context_1.Context.SCOPES.toString(),
-                            redirect_uri: "https://" + context_1.Context.HOST_NAME + redirectPath,
+                            redirect_uri: "".concat(context_1.Context.HOST_SCHEME, "://").concat(context_1.Context.HOST_NAME).concat(redirectPath),
                             state: state,
                             'grant_options[]': isOnline ? 'per-user' : '',
                         };
                         queryString = querystring_1.default.stringify(query);
-                        return [2 /*return*/, "https://" + shop + "/admin/oauth/authorize?" + queryString];
+                        return [2 /*return*/, "https://".concat(cleanShop, "/admin/oauth/authorize?").concat(queryString)];
                 }
             });
         });
@@ -76,12 +78,13 @@ var ShopifyOAuth = {
      * @param response Current HTTP Response
      * @param query Current HTTP Request Query, containing the information to be validated.
      *              Depending on framework, this may need to be cast as "unknown" before being passed.
+     * @param isOnline Whether the session is online or offline
      * @returns SessionInterface
      */
     validateAuthCallback: function (request, response, query, isOnline) {
         if (isOnline === void 0) { isOnline = true; }
         return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var currentSession, sessionCookie, body, postParams, client, postResponse, responseBody, access_token, scope, rest, sessionExpiration, onlineInfo, jwtSessionId, jwtSession, sessionDeleted, cookies, responseBody, sessionStored;
+            var currentSession, sessionCookie, body, postParams, cleanShop, client, postResponse, responseBody, access_token, scope, rest, sessionExpiration, onlineInfo, jwtSessionId, jwtSession, sessionDeleted, cookies, responseBody, sessionStored;
             return tslib_1.__generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -90,7 +93,7 @@ var ShopifyOAuth = {
                         if (!isOnline) return [3 /*break*/, 2];
                         sessionCookie = this.getCookieSessionId(request, response);
                         if (!sessionCookie) {
-                            throw new ShopifyErrors.CookieNotFound("Cannot complete OAuth process. Could not find an OAuth cookie for shop url: " + query.shop);
+                            throw new ShopifyErrors.CookieNotFound("Cannot complete OAuth process. Could not find an OAuth cookie for shop url: ".concat(query.shop));
                         }
                         return [4 /*yield*/, context_1.Context.SESSION_STORAGE.loadSession(sessionCookie)];
                     case 1:
@@ -102,7 +105,7 @@ var ShopifyOAuth = {
                         _a.label = 4;
                     case 4:
                         if (!currentSession) {
-                            throw new ShopifyErrors.SessionNotFound("Cannot complete OAuth process. No session found for the specified shop url: " + query.shop);
+                            throw new ShopifyErrors.SessionNotFound("Cannot complete OAuth process. No session found for the specified shop url: ".concat(query.shop));
                         }
                         if (!validQuery(query, currentSession)) {
                             throw new ShopifyErrors.InvalidOAuthError('Invalid OAuth callback.');
@@ -117,7 +120,8 @@ var ShopifyOAuth = {
                             type: types_1.DataType.JSON,
                             data: body,
                         };
-                        client = new http_client_1.HttpClient(currentSession.shop);
+                        cleanShop = (0, shop_validator_1.sanitizeShop)(currentSession.shop);
+                        client = new http_client_1.HttpClient(cleanShop);
                         return [4 /*yield*/, client.post(postParams)];
                     case 5:
                         postResponse = _a.sent();
@@ -131,7 +135,7 @@ var ShopifyOAuth = {
                         currentSession.onlineAccessInfo = rest;
                         if (!context_1.Context.IS_EMBEDDED_APP) return [3 /*break*/, 7];
                         onlineInfo = currentSession.onlineAccessInfo;
-                        jwtSessionId = this.getJwtSessionId(currentSession.shop, "" + onlineInfo.associated_user.id);
+                        jwtSessionId = this.getJwtSessionId(currentSession.shop, "".concat(onlineInfo.associated_user.id));
                         jwtSession = session_1.Session.cloneSession(currentSession, jwtSessionId);
                         return [4 /*yield*/, context_1.Context.SESSION_STORAGE.deleteSession(currentSession.id)];
                     case 6:
@@ -176,11 +180,7 @@ var ShopifyOAuth = {
      * @param response HTTP response object
      */
     getCookieSessionId: function (request, response) {
-        var cookies = new cookies_1.default(request, response, {
-            secure: true,
-            keys: [context_1.Context.API_SECRET_KEY],
-        });
-        return cookies.get(this.SESSION_COOKIE_NAME, { signed: true });
+        return getValueFromCookie(request, response, this.SESSION_COOKIE_NAME);
     },
     /**
      * Builds a JWT session id from the current shop and user.
@@ -189,7 +189,7 @@ var ShopifyOAuth = {
      * @param userId Current actor id
      */
     getJwtSessionId: function (shop, userId) {
-        return shop + "_" + userId;
+        return "".concat((0, shop_validator_1.sanitizeShop)(shop), "_").concat(userId);
     },
     /**
      * Builds an offline session id for the given shop.
@@ -197,7 +197,7 @@ var ShopifyOAuth = {
      * @param shop Shopify shop domain
      */
     getOfflineSessionId: function (shop) {
-        return "offline_" + shop;
+        return "offline_".concat((0, shop_validator_1.sanitizeShop)(shop));
     },
     /**
      * Extracts the current session id from the request / response pair.
@@ -216,7 +216,7 @@ var ShopifyOAuth = {
                 if (!matches) {
                     throw new ShopifyErrors.MissingJwtTokenError('Missing Bearer token in authorization header');
                 }
-                var jwtPayload = decode_session_token_1.default(matches[1]);
+                var jwtPayload = (0, decode_session_token_1.default)(matches[1]);
                 var shop = jwtPayload.dest.replace(/^https:\/\//, '');
                 if (isOnline) {
                     currentSessionId = this.getJwtSessionId(shop, jwtPayload.sub);
@@ -244,5 +244,19 @@ exports.ShopifyOAuth = ShopifyOAuth;
  * @param session Current session
  */
 function validQuery(query, session) {
-    return (hmac_validator_1.default(query) && safe_compare_1.default(query.state, session.state));
+    return ((0, hmac_validator_1.default)(query) && (0, safe_compare_1.default)(query.state, session.state));
+}
+/**
+ * Loads a given value from the cookie
+ *
+ * @param request HTTP request object
+ * @param response HTTP response object
+ * @param name Name of the cookie to load
+ */
+function getValueFromCookie(request, response, name) {
+    var cookies = new cookies_1.default(request, response, {
+        secure: true,
+        keys: [context_1.Context.API_SECRET_KEY],
+    });
+    return cookies.get(name, { signed: true });
 }
