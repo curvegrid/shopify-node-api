@@ -1,4 +1,7 @@
 "use strict";
+/***********************************************************************************************************************
+* This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
+***********************************************************************************************************************/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DraftOrder = void 0;
 var tslib_1 = require("tslib");
@@ -111,22 +114,22 @@ var DraftOrder = /** @class */ (function (_super) {
         });
     };
     DraftOrder.prototype.complete = function (_a) {
-        var _b = _a.payment_pending, payment_pending = _b === void 0 ? null : _b, _c = _a.body, body = _c === void 0 ? null : _c, otherArgs = tslib_1.__rest(_a, ["payment_pending", "body"]);
+        var _b = _a.payment_gateway_id, payment_gateway_id = _b === void 0 ? null : _b, _c = _a.payment_pending, payment_pending = _c === void 0 ? null : _c, _d = _a.body, body = _d === void 0 ? null : _d, otherArgs = tslib_1.__rest(_a, ["payment_gateway_id", "payment_pending", "body"]);
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var response;
-            return tslib_1.__generator(this, function (_d) {
-                switch (_d.label) {
+            return tslib_1.__generator(this, function (_e) {
+                switch (_e.label) {
                     case 0: return [4 /*yield*/, DraftOrder.request({
                             http_method: "put",
                             operation: "complete",
                             session: this.session,
                             urlIds: { "id": this.id },
-                            params: tslib_1.__assign({ "payment_pending": payment_pending }, otherArgs),
+                            params: tslib_1.__assign({ "payment_gateway_id": payment_gateway_id, "payment_pending": payment_pending }, otherArgs),
                             body: body,
                             entity: this,
                         })];
                     case 1:
-                        response = _d.sent();
+                        response = _e.sent();
                         return [2 /*return*/, response ? response.body : null];
                 }
             });

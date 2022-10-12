@@ -5,6 +5,8 @@ export declare class InvalidHmacError extends ShopifyError {
 }
 export declare class InvalidShopError extends ShopifyError {
 }
+export declare class InvalidHostError extends ShopifyError {
+}
 export declare class InvalidJwtError extends ShopifyError {
 }
 export declare class MissingJwtTokenError extends ShopifyError {
@@ -52,6 +54,17 @@ export declare class HttpThrottlingError extends HttpRetriableError {
 }
 export declare class RestResourceError extends ShopifyError {
 }
+export declare class GraphqlQueryError extends ShopifyError {
+    readonly response: {
+        [key: string]: unknown;
+    };
+    constructor({ message, response, }: {
+        message: string;
+        response: {
+            [key: string]: unknown;
+        };
+    });
+}
 export declare class InvalidOAuthError extends ShopifyError {
 }
 export declare class SessionNotFound extends ShopifyError {
@@ -67,6 +80,15 @@ export declare class SessionStorageError extends ShopifyError {
 export declare class MissingRequiredArgument extends ShopifyError {
 }
 export declare class UnsupportedClientType extends ShopifyError {
+}
+export declare class InvalidRequestError extends ShopifyError {
+}
+export declare class BillingError extends ShopifyError {
+    readonly errorData: any;
+    constructor({ message, errorData }: {
+        message: string;
+        errorData: any;
+    });
 }
 export {};
 //# sourceMappingURL=error.d.ts.map

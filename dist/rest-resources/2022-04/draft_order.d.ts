@@ -1,3 +1,6 @@
+/***********************************************************************************************************************
+* This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
+***********************************************************************************************************************/
 import Base, { ResourcePath } from '../../base-rest-resource';
 import { SessionInterface } from '../../auth/session/types';
 import { ApiVersion } from '../../base-types';
@@ -38,6 +41,7 @@ interface SendInvoiceArgs {
 }
 interface CompleteArgs {
     [key: string]: unknown;
+    payment_gateway_id?: unknown;
     payment_pending?: unknown;
     body?: {
         [key: string]: unknown;
@@ -59,7 +63,7 @@ export declare class DraftOrder extends Base {
     static all({ session, fields, limit, since_id, updated_at_min, updated_at_max, ids, status, ...otherArgs }: AllArgs): Promise<DraftOrder[]>;
     static count({ session, since_id, status, updated_at_max, updated_at_min, ...otherArgs }: CountArgs): Promise<unknown>;
     send_invoice({ body, ...otherArgs }: SendInvoiceArgs): Promise<unknown>;
-    complete({ payment_pending, body, ...otherArgs }: CompleteArgs): Promise<unknown>;
+    complete({ payment_gateway_id, payment_pending, body, ...otherArgs }: CompleteArgs): Promise<unknown>;
     applied_discount: {
         [key: string]: unknown;
     } | null;

@@ -1,3 +1,6 @@
+/***********************************************************************************************************************
+* This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
+***********************************************************************************************************************/
 import Base, { ResourcePath } from '../../base-rest-resource';
 import { SessionInterface } from '../../auth/session/types';
 import { ApiVersion } from '../../base-types';
@@ -25,6 +28,10 @@ interface SearchArgs {
     query?: unknown;
     limit?: unknown;
     fields?: unknown;
+    created_at_min?: unknown;
+    created_at_max?: unknown;
+    updated_at_min?: unknown;
+    updated_at_max?: unknown;
 }
 interface DisableArgs {
     [key: string]: unknown;
@@ -46,7 +53,7 @@ export declare class GiftCard extends Base {
     static find({ session, id }: FindArgs): Promise<GiftCard | null>;
     static all({ session, status, limit, since_id, fields, ...otherArgs }: AllArgs): Promise<GiftCard[]>;
     static count({ session, status, ...otherArgs }: CountArgs): Promise<unknown>;
-    static search({ session, order, query, limit, fields, ...otherArgs }: SearchArgs): Promise<unknown>;
+    static search({ session, order, query, limit, fields, created_at_min, created_at_max, updated_at_min, updated_at_max, ...otherArgs }: SearchArgs): Promise<unknown>;
     disable({ body, ...otherArgs }: DisableArgs): Promise<unknown>;
     api_client_id: number | null;
     balance: number | null;

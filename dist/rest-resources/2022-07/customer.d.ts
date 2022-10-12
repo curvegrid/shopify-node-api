@@ -10,6 +10,10 @@ interface FindArgs {
     id: number | string;
     fields?: unknown;
 }
+interface DeleteArgs {
+    session: SessionInterface;
+    id: number | string;
+}
 interface AllArgs {
     [key: string]: unknown;
     session: SessionInterface;
@@ -64,6 +68,7 @@ export declare class Customer extends Base {
     };
     protected static PATHS: ResourcePath[];
     static find({ session, id, fields }: FindArgs): Promise<Customer | null>;
+    static delete({ session, id }: DeleteArgs): Promise<unknown>;
     static all({ session, ids, since_id, created_at_min, created_at_max, updated_at_min, updated_at_max, limit, fields, ...otherArgs }: AllArgs): Promise<Customer[]>;
     static count({ session, ...otherArgs }: CountArgs): Promise<unknown>;
     static orders({ session, id, status, ...otherArgs }: OrdersArgs): Promise<unknown>;

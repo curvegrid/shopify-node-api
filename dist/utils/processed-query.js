@@ -31,20 +31,20 @@ var ProcessedQuery = /** @class */ (function () {
         }
     };
     ProcessedQuery.prototype.putArray = function (key, value) {
-        this.processedQuery[key + "[]"] = value;
+        this.processedQuery["".concat(key, "[]")] = value;
     };
     ProcessedQuery.prototype.putObject = function (key, value) {
         var _this = this;
         Object.entries(value).forEach(function (_a) {
             var _b = tslib_1.__read(_a, 2), entry = _b[0], entryValue = _b[1];
-            _this.processedQuery[key + "[" + entry + "]"] = entryValue;
+            _this.processedQuery["".concat(key, "[").concat(entry, "]")] = entryValue;
         });
     };
     ProcessedQuery.prototype.putSimple = function (key, value) {
         this.processedQuery[key] = value;
     };
     ProcessedQuery.prototype.stringify = function () {
-        return "?" + querystring_1.default.stringify(this.processedQuery);
+        return "?".concat(querystring_1.default.stringify(this.processedQuery));
     };
     return ProcessedQuery;
 }());

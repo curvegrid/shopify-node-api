@@ -1,16 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.UnsupportedClientType = exports.MissingRequiredArgument = exports.SessionStorageError = exports.InvalidWebhookError = exports.InvalidSession = exports.CookieNotFound = exports.SessionNotFound = exports.InvalidOAuthError = exports.RestResourceError = exports.HttpThrottlingError = exports.HttpInternalError = exports.HttpRetriableError = exports.HttpResponseError = exports.HttpMaxRetriesError = exports.HttpRequestError = exports.PrivateAppError = exports.UninitializedContextError = exports.SafeCompareError = exports.MissingJwtTokenError = exports.InvalidJwtError = exports.InvalidShopError = exports.InvalidHmacError = exports.ShopifyError = void 0;
+exports.BillingError = exports.InvalidRequestError = exports.UnsupportedClientType = exports.MissingRequiredArgument = exports.SessionStorageError = exports.InvalidWebhookError = exports.InvalidSession = exports.CookieNotFound = exports.SessionNotFound = exports.InvalidOAuthError = exports.GraphqlQueryError = exports.RestResourceError = exports.HttpThrottlingError = exports.HttpInternalError = exports.HttpRetriableError = exports.HttpResponseError = exports.HttpMaxRetriesError = exports.HttpRequestError = exports.PrivateAppError = exports.UninitializedContextError = exports.SafeCompareError = exports.MissingJwtTokenError = exports.InvalidJwtError = exports.InvalidHostError = exports.InvalidShopError = exports.InvalidHmacError = exports.ShopifyError = void 0;
 var tslib_1 = require("tslib");
 var ShopifyError = /** @class */ (function (_super) {
     tslib_1.__extends(ShopifyError, _super);
     function ShopifyError() {
-        var _newTarget = this.constructor;
         var args = [];
         for (var _i = 0; _i < arguments.length; _i++) {
             args[_i] = arguments[_i];
         }
-        var _this = _super.apply(this, tslib_1.__spread(args)) || this;
+        var _newTarget = this.constructor;
+        var _this = _super.apply(this, tslib_1.__spreadArray([], tslib_1.__read(args), false)) || this;
         Object.setPrototypeOf(_this, _newTarget.prototype);
         return _this;
     }
@@ -33,6 +33,14 @@ var InvalidShopError = /** @class */ (function (_super) {
     return InvalidShopError;
 }(ShopifyError));
 exports.InvalidShopError = InvalidShopError;
+var InvalidHostError = /** @class */ (function (_super) {
+    tslib_1.__extends(InvalidHostError, _super);
+    function InvalidHostError() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return InvalidHostError;
+}(ShopifyError));
+exports.InvalidHostError = InvalidHostError;
 var InvalidJwtError = /** @class */ (function (_super) {
     tslib_1.__extends(InvalidJwtError, _super);
     function InvalidJwtError() {
@@ -124,8 +132,9 @@ exports.HttpInternalError = HttpInternalError;
 var HttpThrottlingError = /** @class */ (function (_super) {
     tslib_1.__extends(HttpThrottlingError, _super);
     function HttpThrottlingError(_a) {
+        var _this = this;
         var retryAfter = _a.retryAfter, params = tslib_1.__rest(_a, ["retryAfter"]);
-        var _this = _super.call(this, params) || this;
+        _this = _super.call(this, params) || this;
         _this.response.retryAfter = retryAfter;
         return _this;
     }
@@ -140,6 +149,17 @@ var RestResourceError = /** @class */ (function (_super) {
     return RestResourceError;
 }(ShopifyError));
 exports.RestResourceError = RestResourceError;
+var GraphqlQueryError = /** @class */ (function (_super) {
+    tslib_1.__extends(GraphqlQueryError, _super);
+    function GraphqlQueryError(_a) {
+        var message = _a.message, response = _a.response;
+        var _this = _super.call(this, message) || this;
+        _this.response = response;
+        return _this;
+    }
+    return GraphqlQueryError;
+}(ShopifyError));
+exports.GraphqlQueryError = GraphqlQueryError;
 var InvalidOAuthError = /** @class */ (function (_super) {
     tslib_1.__extends(InvalidOAuthError, _super);
     function InvalidOAuthError() {
@@ -204,3 +224,23 @@ var UnsupportedClientType = /** @class */ (function (_super) {
     return UnsupportedClientType;
 }(ShopifyError));
 exports.UnsupportedClientType = UnsupportedClientType;
+var InvalidRequestError = /** @class */ (function (_super) {
+    tslib_1.__extends(InvalidRequestError, _super);
+    function InvalidRequestError() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return InvalidRequestError;
+}(ShopifyError));
+exports.InvalidRequestError = InvalidRequestError;
+var BillingError = /** @class */ (function (_super) {
+    tslib_1.__extends(BillingError, _super);
+    function BillingError(_a) {
+        var message = _a.message, errorData = _a.errorData;
+        var _this = _super.call(this, message) || this;
+        _this.message = message;
+        _this.errorData = errorData;
+        return _this;
+    }
+    return BillingError;
+}(ShopifyError));
+exports.BillingError = BillingError;

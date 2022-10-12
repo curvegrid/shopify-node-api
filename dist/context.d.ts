@@ -2,6 +2,7 @@ import { SessionStorage } from './auth/session/session_storage';
 import { ContextParams } from './base-types';
 import { AuthScopes } from './auth/scopes';
 interface ContextInterface extends ContextParams {
+    HOST_SCHEME: string;
     SESSION_STORAGE: SessionStorage;
     SCOPES: AuthScopes;
     /**

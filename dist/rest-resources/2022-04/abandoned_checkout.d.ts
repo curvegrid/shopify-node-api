@@ -1,3 +1,6 @@
+/***********************************************************************************************************************
+* This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
+***********************************************************************************************************************/
 import Base, { ResourcePath } from '../../base-rest-resource';
 import { SessionInterface } from '../../auth/session/types';
 import { ApiVersion } from '../../base-types';
@@ -7,13 +10,13 @@ import { DiscountCode } from './discount_code';
 interface CheckoutsArgs {
     [key: string]: unknown;
     session: SessionInterface;
-    limit?: unknown;
     since_id?: unknown;
     created_at_min?: unknown;
     created_at_max?: unknown;
     updated_at_min?: unknown;
     updated_at_max?: unknown;
     status?: unknown;
+    limit?: unknown;
 }
 export declare class AbandonedCheckout extends Base {
     static API_VERSION: ApiVersion;
@@ -26,7 +29,7 @@ export declare class AbandonedCheckout extends Base {
         [key: string]: typeof Base;
     };
     protected static PATHS: ResourcePath[];
-    static checkouts({ session, limit, since_id, created_at_min, created_at_max, updated_at_min, updated_at_max, status, ...otherArgs }: CheckoutsArgs): Promise<unknown>;
+    static checkouts({ session, since_id, created_at_min, created_at_max, updated_at_min, updated_at_max, status, limit, ...otherArgs }: CheckoutsArgs): Promise<unknown>;
     abandoned_checkout_url: string | null;
     billing_address: {
         [key: string]: unknown;

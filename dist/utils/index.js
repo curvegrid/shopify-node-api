@@ -11,9 +11,10 @@ var graphql_proxy_1 = tslib_1.__importDefault(require("./graphql_proxy"));
 var safe_compare_1 = tslib_1.__importDefault(require("./safe-compare"));
 var store_session_1 = tslib_1.__importDefault(require("./store-session"));
 var hmac_validator_1 = tslib_1.__importDefault(require("./hmac-validator"));
-var shop_validator_1 = tslib_1.__importDefault(require("./shop-validator"));
+var shop_validator_1 = require("./shop-validator");
 var version_compatible_1 = tslib_1.__importDefault(require("./version-compatible"));
 var with_session_1 = tslib_1.__importDefault(require("./with-session"));
+var get_embedded_app_url_1 = tslib_1.__importDefault(require("./get-embedded-app-url"));
 var ShopifyUtils = {
     decodeSessionToken: decode_session_token_1.default,
     deleteCurrentSession: delete_current_session_1.default,
@@ -25,8 +26,10 @@ var ShopifyUtils = {
     safeCompare: safe_compare_1.default,
     storeSession: store_session_1.default,
     validateHmac: hmac_validator_1.default,
-    validateShop: shop_validator_1.default,
+    sanitizeShop: shop_validator_1.sanitizeShop,
+    sanitizeHost: shop_validator_1.sanitizeHost,
     versionCompatible: version_compatible_1.default,
     withSession: with_session_1.default,
+    getEmbeddedAppUrl: get_embedded_app_url_1.default,
 };
 exports.default = ShopifyUtils;

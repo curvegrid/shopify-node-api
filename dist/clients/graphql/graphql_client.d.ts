@@ -10,7 +10,7 @@ export declare class GraphqlClient {
     protected baseApiPath: string;
     private readonly client;
     constructor(domain: string, accessToken?: string | undefined);
-    query(params: GraphqlParams): Promise<RequestReturn>;
+    query<T = unknown>(params: GraphqlParams): Promise<RequestReturn<T>>;
     protected getAccessTokenHeader(): AccessTokenHeader;
 }
 //# sourceMappingURL=graphql_client.d.ts.map

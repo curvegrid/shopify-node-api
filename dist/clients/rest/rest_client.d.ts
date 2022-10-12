@@ -6,7 +6,7 @@ declare class RestClient extends HttpClient {
     private static LINK_HEADER_REGEXP;
     private static DEFAULT_LIMIT;
     constructor(domain: string, accessToken?: string | undefined);
-    protected request(params: RequestParams): Promise<RestRequestReturn>;
+    protected request<T = unknown>(params: RequestParams): Promise<RestRequestReturn<T>>;
     protected getRequestPath(path: string): string;
     private buildRequestParams;
 }

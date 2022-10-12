@@ -34,8 +34,8 @@ export declare type DeleteRequestParams = GetRequestParams;
 export declare type RequestParams = (GetRequestParams | PostRequestParams) & {
     method: Method;
 };
-export interface RequestReturn {
-    body: unknown;
+export interface RequestReturn<T = unknown> {
+    body: T;
     headers: Headers;
 }
 //# sourceMappingURL=types.d.ts.map

@@ -31,6 +31,26 @@ var Customer = /** @class */ (function (_super) {
             });
         });
     };
+    Customer.delete = function (_a) {
+        var session = _a.session, id = _a.id;
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
+            var response;
+            return tslib_1.__generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0: return [4 /*yield*/, Customer.request({
+                            http_method: "delete",
+                            operation: "delete",
+                            session: session,
+                            urlIds: { "id": id },
+                            params: {},
+                        })];
+                    case 1:
+                        response = _b.sent();
+                        return [2 /*return*/, response ? response.body : null];
+                }
+            });
+        });
+    };
     Customer.all = function (_a) {
         var session = _a.session, _b = _a.ids, ids = _b === void 0 ? null : _b, _c = _a.since_id, since_id = _c === void 0 ? null : _c, _d = _a.created_at_min, created_at_min = _d === void 0 ? null : _d, _e = _a.created_at_max, created_at_max = _e === void 0 ? null : _e, _f = _a.updated_at_min, updated_at_min = _f === void 0 ? null : _f, _g = _a.updated_at_max, updated_at_max = _g === void 0 ? null : _g, _h = _a.limit, limit = _h === void 0 ? null : _h, _j = _a.fields, fields = _j === void 0 ? null : _j, otherArgs = tslib_1.__rest(_a, ["session", "ids", "since_id", "created_at_min", "created_at_max", "updated_at_min", "updated_at_max", "limit", "fields"]);
         return tslib_1.__awaiter(this, void 0, void 0, function () {
@@ -167,6 +187,7 @@ var Customer = /** @class */ (function (_super) {
     };
     Customer.HAS_MANY = {};
     Customer.PATHS = [
+        { "http_method": "delete", "operation": "delete", "ids": ["id"], "path": "customers/<id>.json" },
         { "http_method": "get", "operation": "count", "ids": [], "path": "customers/count.json" },
         { "http_method": "get", "operation": "get", "ids": [], "path": "customers.json" },
         { "http_method": "get", "operation": "get", "ids": ["id"], "path": "customers/<id>.json" },

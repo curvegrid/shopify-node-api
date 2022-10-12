@@ -71,22 +71,22 @@ var GiftCard = /** @class */ (function (_super) {
         });
     };
     GiftCard.search = function (_a) {
-        var session = _a.session, _b = _a.order, order = _b === void 0 ? null : _b, _c = _a.query, query = _c === void 0 ? null : _c, _d = _a.limit, limit = _d === void 0 ? null : _d, _e = _a.fields, fields = _e === void 0 ? null : _e, otherArgs = tslib_1.__rest(_a, ["session", "order", "query", "limit", "fields"]);
+        var session = _a.session, _b = _a.order, order = _b === void 0 ? null : _b, _c = _a.query, query = _c === void 0 ? null : _c, _d = _a.limit, limit = _d === void 0 ? null : _d, _e = _a.fields, fields = _e === void 0 ? null : _e, _f = _a.created_at_min, created_at_min = _f === void 0 ? null : _f, _g = _a.created_at_max, created_at_max = _g === void 0 ? null : _g, _h = _a.updated_at_min, updated_at_min = _h === void 0 ? null : _h, _j = _a.updated_at_max, updated_at_max = _j === void 0 ? null : _j, otherArgs = tslib_1.__rest(_a, ["session", "order", "query", "limit", "fields", "created_at_min", "created_at_max", "updated_at_min", "updated_at_max"]);
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var response;
-            return tslib_1.__generator(this, function (_f) {
-                switch (_f.label) {
+            return tslib_1.__generator(this, function (_k) {
+                switch (_k.label) {
                     case 0: return [4 /*yield*/, GiftCard.request({
                             http_method: "get",
                             operation: "search",
                             session: session,
                             urlIds: {},
-                            params: tslib_1.__assign({ "order": order, "query": query, "limit": limit, "fields": fields }, otherArgs),
+                            params: tslib_1.__assign({ "order": order, "query": query, "limit": limit, "fields": fields, "created_at_min": created_at_min, "created_at_max": created_at_max, "updated_at_min": updated_at_min, "updated_at_max": updated_at_max }, otherArgs),
                             body: {},
                             entity: null,
                         })];
                     case 1:
-                        response = _f.sent();
+                        response = _k.sent();
                         return [2 /*return*/, response ? response.body : null];
                 }
             });

@@ -7,7 +7,7 @@ export interface PageInfo {
     prevPage?: GetRequestParams;
     nextPage?: GetRequestParams;
 }
-export declare type RestRequestReturn = RequestReturn & {
+export declare type RestRequestReturn<T = unknown> = RequestReturn<T> & {
     pageInfo?: PageInfo;
 };
 //# sourceMappingURL=types.d.ts.map

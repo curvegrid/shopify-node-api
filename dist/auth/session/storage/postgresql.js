@@ -3,7 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PostgreSQLSessionStorage = void 0;
 var tslib_1 = require("tslib");
 var pg_1 = tslib_1.__importDefault(require("pg"));
-var session_1 = require("../session");
+var session_utils_1 = require("../session-utils");
+var shop_validator_1 = require("../../../utils/shop-validator");
 var defaultPostgreSQLSessionStorageOptions = {
     sessionTableName: 'shopify_sessions',
     port: 3211,
@@ -19,7 +20,7 @@ var PostgreSQLSessionStorage = /** @class */ (function () {
         this.ready = this.init();
     }
     PostgreSQLSessionStorage.withCredentials = function (host, dbName, username, password, opts) {
-        return new PostgreSQLSessionStorage(new URL("postgres://" + encodeURIComponent(username) + ":" + encodeURIComponent(password) + "@" + host + "/" + encodeURIComponent(dbName)), opts);
+        return new PostgreSQLSessionStorage(new URL("postgres://".concat(encodeURIComponent(username), ":").concat(encodeURIComponent(password), "@").concat(host, "/").concat(encodeURIComponent(dbName))), opts);
     };
     PostgreSQLSessionStorage.prototype.storeSession = function (session) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
@@ -29,16 +30,16 @@ var PostgreSQLSessionStorage = /** @class */ (function () {
                     case 0: return [4 /*yield*/, this.ready];
                     case 1:
                         _a.sent();
-                        entries = session_1.sessionEntries(session);
-                        query = "\n      INSERT INTO " + this.options.sessionTableName + "\n      (" + entries.map(function (_a) {
+                        entries = (0, session_utils_1.sessionEntries)(session);
+                        query = "\n      INSERT INTO ".concat(this.options.sessionTableName, "\n      (").concat(entries.map(function (_a) {
                             var _b = tslib_1.__read(_a, 1), key = _b[0];
                             return key;
-                        }).join(', ') + ")\n      VALUES (" + entries.map(function (_, i) { return "$" + (i + 1); }).join(', ') + ")\n      ON CONFLICT (id) DO UPDATE SET " + entries
+                        }).join(', '), ")\n      VALUES (").concat(entries.map(function (_, i) { return "$".concat(i + 1); }).join(', '), ")\n      ON CONFLICT (id) DO UPDATE SET ").concat(entries
                             .map(function (_a) {
                             var _b = tslib_1.__read(_a, 1), key = _b[0];
-                            return key + " = Excluded." + key;
+                            return "".concat(key, " = Excluded.").concat(key);
                         })
-                            .join(', ') + ";\n    ";
+                            .join(', '), ";\n    ");
                         return [4 /*yield*/, this.query(query, entries.map(function (_a) {
                                 var _b = tslib_1.__read(_a, 2), _key = _b[0], value = _b[1];
                                 return value;
@@ -58,14 +59,14 @@ var PostgreSQLSessionStorage = /** @class */ (function () {
                     case 0: return [4 /*yield*/, this.ready];
                     case 1:
                         _a.sent();
-                        query = "\n      SELECT * FROM " + this.options.sessionTableName + "\n      WHERE id = $1;\n    ";
+                        query = "\n      SELECT * FROM ".concat(this.options.sessionTableName, "\n      WHERE id = $1;\n    ");
                         return [4 /*yield*/, this.query(query, [id])];
                     case 2:
                         rows = _a.sent();
                         if (!Array.isArray(rows) || (rows === null || rows === void 0 ? void 0 : rows.length) !== 1)
                             return [2 /*return*/, undefined];
                         rawResult = rows[0];
-                        return [2 /*return*/, session_1.sessionFromEntries(Object.entries(rawResult))];
+                        return [2 /*return*/, (0, session_utils_1.sessionFromEntries)(Object.entries(rawResult))];
                 }
             });
         });
@@ -78,11 +79,51 @@ var PostgreSQLSessionStorage = /** @class */ (function () {
                     case 0: return [4 /*yield*/, this.ready];
                     case 1:
                         _a.sent();
-                        query = "\n      DELETE FROM " + this.options.sessionTableName + "\n      WHERE id = $1;\n    ";
+                        query = "\n      DELETE FROM ".concat(this.options.sessionTableName, "\n      WHERE id = $1;\n    ");
                         return [4 /*yield*/, this.query(query, [id])];
                     case 2:
                         _a.sent();
                         return [2 /*return*/, true];
+                }
+            });
+        });
+    };
+    PostgreSQLSessionStorage.prototype.deleteSessions = function (ids) {
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
+            var query;
+            return tslib_1.__generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.ready];
+                    case 1:
+                        _a.sent();
+                        query = "\n      DELETE FROM ".concat(this.options.sessionTableName, "\n      WHERE id IN (").concat(ids.map(function (_, i) { return "$".concat(i + 1); }).join(', '), ");\n    ");
+                        return [4 /*yield*/, this.query(query, ids)];
+                    case 2:
+                        _a.sent();
+                        return [2 /*return*/, true];
+                }
+            });
+        });
+    };
+    PostgreSQLSessionStorage.prototype.findSessionsByShop = function (shop) {
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
+            var cleanShop, query, rows, results;
+            return tslib_1.__generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.ready];
+                    case 1:
+                        _a.sent();
+                        cleanShop = (0, shop_validator_1.sanitizeShop)(shop, true);
+                        query = "\n      SELECT * FROM ".concat(this.options.sessionTableName, "\n      WHERE shop = $1;\n    ");
+                        return [4 /*yield*/, this.query(query, [cleanShop])];
+                    case 2:
+                        rows = _a.sent();
+                        if (!Array.isArray(rows) || (rows === null || rows === void 0 ? void 0 : rows.length) === 0)
+                            return [2 /*return*/, []];
+                        results = rows.map(function (row) {
+                            return (0, session_utils_1.sessionFromEntries)(Object.entries(row));
+                        });
+                        return [2 /*return*/, results];
                 }
             });
         });
@@ -121,14 +162,14 @@ var PostgreSQLSessionStorage = /** @class */ (function () {
     };
     PostgreSQLSessionStorage.prototype.hasSessionTable = function () {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var query, _a, rows;
-            return tslib_1.__generator(this, function (_b) {
-                switch (_b.label) {
+            var query, rows;
+            return tslib_1.__generator(this, function (_a) {
+                switch (_a.label) {
                     case 0:
                         query = "\n      SELECT * FROM pg_catalog.pg_tables WHERE tablename = $1\n    ";
                         return [4 /*yield*/, this.query(query, [this.options.sessionTableName])];
                     case 1:
-                        _a = tslib_1.__read.apply(void 0, [_b.sent(), 1]), rows = _a[0];
+                        rows = _a.sent();
                         return [2 /*return*/, Array.isArray(rows) && rows.length === 1];
                 }
             });
@@ -143,7 +184,7 @@ var PostgreSQLSessionStorage = /** @class */ (function () {
                     case 1:
                         hasSessionTable = _a.sent();
                         if (!!hasSessionTable) return [3 /*break*/, 3];
-                        query = "\n        CREATE TABLE " + this.options.sessionTableName + " (\n          id varchar(255) NOT NULL PRIMARY KEY,\n          shop varchar(255) NOT NULL,\n          state varchar(255) NOT NULL,\n          isOnline boolean NOT NULL,\n          scope varchar(255),\n          accessToken varchar(255)\n        )\n      ";
+                        query = "\n        CREATE TABLE ".concat(this.options.sessionTableName, " (\n          id varchar(255) NOT NULL PRIMARY KEY,\n          shop varchar(255) NOT NULL,\n          state varchar(255) NOT NULL,\n          isOnline boolean NOT NULL,\n          scope varchar(255),\n          expires integer,\n          onlineAccessInfo varchar(255),\n          accessToken varchar(255)\n        )\n      ");
                         return [4 /*yield*/, this.query(query)];
                     case 2:
                         _a.sent();

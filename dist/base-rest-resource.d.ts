@@ -62,9 +62,10 @@ declare class Base {
     }): Promise<void>;
     saveAndUpdate(): Promise<void>;
     delete(): Promise<void>;
-    serialize(): Body;
+    serialize(saving?: boolean): Body;
     protected setData(data: Body): void;
     private resource;
+    private serializeSubAttribute;
 }
 export default Base;
 //# sourceMappingURL=base-rest-resource.d.ts.map

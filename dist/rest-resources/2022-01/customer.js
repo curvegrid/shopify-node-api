@@ -1,4 +1,7 @@
 "use strict";
+/***********************************************************************************************************************
+* This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
+***********************************************************************************************************************/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Customer = void 0;
 var tslib_1 = require("tslib");
@@ -24,6 +27,26 @@ var Customer = /** @class */ (function (_super) {
                     case 1:
                         result = _c.sent();
                         return [2 /*return*/, result ? result[0] : null];
+                }
+            });
+        });
+    };
+    Customer.delete = function (_a) {
+        var session = _a.session, id = _a.id;
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
+            var response;
+            return tslib_1.__generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0: return [4 /*yield*/, Customer.request({
+                            http_method: "delete",
+                            operation: "delete",
+                            session: session,
+                            urlIds: { "id": id },
+                            params: {},
+                        })];
+                    case 1:
+                        response = _b.sent();
+                        return [2 /*return*/, response ? response.body : null];
                 }
             });
         });
@@ -164,6 +187,7 @@ var Customer = /** @class */ (function (_super) {
     };
     Customer.HAS_MANY = {};
     Customer.PATHS = [
+        { "http_method": "delete", "operation": "delete", "ids": ["id"], "path": "customers/<id>.json" },
         { "http_method": "get", "operation": "count", "ids": [], "path": "customers/count.json" },
         { "http_method": "get", "operation": "get", "ids": [], "path": "customers.json" },
         { "http_method": "get", "operation": "get", "ids": ["id"], "path": "customers/<id>.json" },

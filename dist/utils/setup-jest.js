@@ -14,10 +14,13 @@ beforeEach(function () {
         API_SECRET_KEY: 'test_secret_key',
         SCOPES: ['test_scope'],
         HOST_NAME: 'test_host_name',
+        HOST_SCHEME: 'https',
         API_VERSION: base_types_1.ApiVersion.Unstable,
         IS_EMBEDDED_APP: false,
         IS_PRIVATE_APP: false,
         SESSION_STORAGE: new session_1.MemorySessionStorage(),
+        CUSTOM_SHOP_DOMAINS: undefined,
+        BILLING: undefined,
     });
     jest_fetch_mock_1.default.mockReset();
     currentCall = 0;
@@ -36,7 +39,7 @@ expect.extend({
             Math.abs(received - compareDate) <= seconds * 1000) {
             return {
                 message: function () {
-                    return "expected " + received + " not to be within " + seconds + " seconds of " + compareDate;
+                    return "expected ".concat(received, " not to be within ").concat(seconds, " seconds of ").concat(compareDate);
                 },
                 pass: true,
             };
@@ -44,7 +47,7 @@ expect.extend({
         else {
             return {
                 message: function () {
-                    return "expected " + received + " to be within " + seconds + " seconds of " + compareDate;
+                    return "expected ".concat(received, " to be within ").concat(seconds, " seconds of ").concat(compareDate);
                 },
                 pass: false,
             };
@@ -52,16 +55,24 @@ expect.extend({
     },
     toMatchMadeHttpRequest: function (_a) {
         var method = _a.method, domain = _a.domain, path = _a.path, _b = _a.query, query = _b === void 0 ? '' : _b, _c = _a.headers, headers = _c === void 0 ? {} : _c, _d = _a.data, data = _d === void 0 ? null : _d, _e = _a.tries, tries = _e === void 0 ? 1 : _e;
+        var searchUrl = new URL("https://".concat(domain).concat(path).concat(query ? "?".concat(query.replace(/\+/g, '%20')) : ''));
+        // We compare the sorted query items, so we can expect arguments in a different order
+        var searchQueryItems = Array.from(searchUrl.searchParams.entries()).sort();
+        var cleanSearchUrl = searchUrl.toString().split('?')[0];
         var bodyObject = data && typeof data !== 'string';
         var maxCall = currentCall + tries;
         for (var i = currentCall; i < maxCall; i++) {
             currentCall++;
             var mockCall = jest_fetch_mock_1.default.mock.calls[i];
             expect(mockCall).not.toBeUndefined();
+            var requestUrl = new URL(mockCall[0]);
+            var requestQueryItems = Array.from(requestUrl.searchParams.entries()).sort();
+            var cleanRequestUrl = requestUrl.toString().split('?')[0];
             if (bodyObject && mockCall[1]) {
                 mockCall[1].body = JSON.parse(mockCall[1].body);
             }
-            expect(mockCall[0]).toEqual("https://" + domain + path + (query ? "?" + query.replace(/\+/g, '%20') : ''));
+            expect(cleanRequestUrl).toEqual(cleanSearchUrl);
+            expect(requestQueryItems).toEqual(searchQueryItems);
             expect(mockCall[1]).toMatchObject({ method: method, headers: headers, body: data });
         }
         return {

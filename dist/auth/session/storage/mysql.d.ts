@@ -13,6 +13,8 @@ export declare class MySQLSessionStorage implements SessionStorage {
     storeSession(session: SessionInterface): Promise<boolean>;
     loadSession(id: string): Promise<SessionInterface | undefined>;
     deleteSession(id: string): Promise<boolean>;
+    deleteSessions(ids: string[]): Promise<boolean>;
+    findSessionsByShop(shop: string): Promise<SessionInterface[]>;
     disconnect(): Promise<void>;
     private init;
     private hasSessionTable;

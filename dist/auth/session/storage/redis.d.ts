@@ -1,7 +1,9 @@
+import { RedisClientOptions } from 'redis';
 import { SessionInterface } from '../types';
 import { SessionStorage } from '../session_storage';
-export interface RedisSessionStorageOptions {
+export interface RedisSessionStorageOptions extends RedisClientOptions {
     sessionKeyPrefix: string;
+    onError?: (...args: any[]) => void;
 }
 export declare class RedisSessionStorage implements SessionStorage {
     private dbUrl;
@@ -13,6 +15,8 @@ export declare class RedisSessionStorage implements SessionStorage {
     storeSession(session: SessionInterface): Promise<boolean>;
     loadSession(id: string): Promise<SessionInterface | undefined>;
     deleteSession(id: string): Promise<boolean>;
+    deleteSessions(ids: string[]): Promise<boolean>;
+    findSessionsByShop(shop: string): Promise<SessionInterface[]>;
     disconnect(): Promise<void>;
     private fullKey;
     private init;

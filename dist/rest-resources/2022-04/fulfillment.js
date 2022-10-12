@@ -1,4 +1,7 @@
 "use strict";
+/***********************************************************************************************************************
+* This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
+***********************************************************************************************************************/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Fulfillment = void 0;
 var tslib_1 = require("tslib");
@@ -67,6 +70,72 @@ var Fulfillment = /** @class */ (function (_super) {
             });
         });
     };
+    Fulfillment.prototype.cancel = function (_a) {
+        var _b = _a.body, body = _b === void 0 ? null : _b, otherArgs = tslib_1.__rest(_a, ["body"]);
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
+            var response;
+            return tslib_1.__generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0: return [4 /*yield*/, Fulfillment.request({
+                            http_method: "post",
+                            operation: "cancel",
+                            session: this.session,
+                            urlIds: { "id": this.id, "order_id": this.order_id },
+                            params: tslib_1.__assign({}, otherArgs),
+                            body: body,
+                            entity: this,
+                        })];
+                    case 1:
+                        response = _c.sent();
+                        return [2 /*return*/, response ? response.body : null];
+                }
+            });
+        });
+    };
+    Fulfillment.prototype.complete = function (_a) {
+        var _b = _a.body, body = _b === void 0 ? null : _b, otherArgs = tslib_1.__rest(_a, ["body"]);
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
+            var response;
+            return tslib_1.__generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0: return [4 /*yield*/, Fulfillment.request({
+                            http_method: "post",
+                            operation: "complete",
+                            session: this.session,
+                            urlIds: { "id": this.id, "order_id": this.order_id },
+                            params: tslib_1.__assign({}, otherArgs),
+                            body: body,
+                            entity: this,
+                        })];
+                    case 1:
+                        response = _c.sent();
+                        return [2 /*return*/, response ? response.body : null];
+                }
+            });
+        });
+    };
+    Fulfillment.prototype.open = function (_a) {
+        var _b = _a.body, body = _b === void 0 ? null : _b, otherArgs = tslib_1.__rest(_a, ["body"]);
+        return tslib_1.__awaiter(this, void 0, void 0, function () {
+            var response;
+            return tslib_1.__generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0: return [4 /*yield*/, Fulfillment.request({
+                            http_method: "post",
+                            operation: "open",
+                            session: this.session,
+                            urlIds: { "id": this.id, "order_id": this.order_id },
+                            params: tslib_1.__assign({}, otherArgs),
+                            body: body,
+                            entity: this,
+                        })];
+                    case 1:
+                        response = _c.sent();
+                        return [2 /*return*/, response ? response.body : null];
+                }
+            });
+        });
+    };
     Fulfillment.prototype.update_tracking = function (_a) {
         var _b = _a.body, body = _b === void 0 ? null : _b, otherArgs = tslib_1.__rest(_a, ["body"]);
         return tslib_1.__awaiter(this, void 0, void 0, function () {
@@ -99,7 +168,14 @@ var Fulfillment = /** @class */ (function (_super) {
         { "http_method": "get", "operation": "get", "ids": ["fulfillment_order_id"], "path": "fulfillment_orders/<fulfillment_order_id>/fulfillments.json" },
         { "http_method": "get", "operation": "get", "ids": ["order_id"], "path": "orders/<order_id>/fulfillments.json" },
         { "http_method": "get", "operation": "get", "ids": ["order_id", "id"], "path": "orders/<order_id>/fulfillments/<id>.json" },
-        { "http_method": "post", "operation": "update_tracking", "ids": ["id"], "path": "fulfillments/<id>/update_tracking.json" }
+        { "http_method": "post", "operation": "cancel", "ids": ["id"], "path": "fulfillments/<id>/cancel.json" },
+        { "http_method": "post", "operation": "cancel", "ids": ["order_id", "id"], "path": "orders/<order_id>/fulfillments/<id>/cancel.json" },
+        { "http_method": "post", "operation": "complete", "ids": ["order_id", "id"], "path": "orders/<order_id>/fulfillments/<id>/complete.json" },
+        { "http_method": "post", "operation": "open", "ids": ["order_id", "id"], "path": "orders/<order_id>/fulfillments/<id>/open.json" },
+        { "http_method": "post", "operation": "post", "ids": [], "path": "fulfillments.json" },
+        { "http_method": "post", "operation": "post", "ids": ["order_id"], "path": "orders/<order_id>/fulfillments.json" },
+        { "http_method": "post", "operation": "update_tracking", "ids": ["id"], "path": "fulfillments/<id>/update_tracking.json" },
+        { "http_method": "put", "operation": "put", "ids": ["order_id", "id"], "path": "orders/<order_id>/fulfillments/<id>.json" }
     ];
     return Fulfillment;
 }(base_rest_resource_1.default));

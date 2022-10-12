@@ -1,4 +1,7 @@
 "use strict";
+/***********************************************************************************************************************
+* This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
+***********************************************************************************************************************/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.FulfillmentRequest = void 0;
 var tslib_1 = require("tslib");
@@ -32,22 +35,22 @@ var FulfillmentRequest = /** @class */ (function (_super) {
         });
     };
     FulfillmentRequest.prototype.reject = function (_a) {
-        var _b = _a.message, message = _b === void 0 ? null : _b, _c = _a.body, body = _c === void 0 ? null : _c, otherArgs = tslib_1.__rest(_a, ["message", "body"]);
+        var _b = _a.message, message = _b === void 0 ? null : _b, _c = _a.reason, reason = _c === void 0 ? null : _c, _d = _a.line_items, line_items = _d === void 0 ? null : _d, _e = _a.body, body = _e === void 0 ? null : _e, otherArgs = tslib_1.__rest(_a, ["message", "reason", "line_items", "body"]);
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var response;
-            return tslib_1.__generator(this, function (_d) {
-                switch (_d.label) {
+            return tslib_1.__generator(this, function (_f) {
+                switch (_f.label) {
                     case 0: return [4 /*yield*/, FulfillmentRequest.request({
                             http_method: "post",
                             operation: "reject",
                             session: this.session,
                             urlIds: { "fulfillment_order_id": this.fulfillment_order_id },
-                            params: tslib_1.__assign({ "message": message }, otherArgs),
+                            params: tslib_1.__assign({ "message": message, "reason": reason, "line_items": line_items }, otherArgs),
                             body: body,
                             entity: this,
                         })];
                     case 1:
-                        response = _d.sent();
+                        response = _f.sent();
                         return [2 /*return*/, response ? response.body : null];
                 }
             });

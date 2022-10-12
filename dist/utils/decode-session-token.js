@@ -5,7 +5,7 @@ var tslib_1 = require("tslib");
 var jsonwebtoken_1 = tslib_1.__importDefault(require("jsonwebtoken"));
 var context_1 = require("../context");
 var ShopifyErrors = tslib_1.__importStar(require("../error"));
-var JWT_PERMITTED_CLOCK_TOLERANCE = 5;
+var JWT_PERMITTED_CLOCK_TOLERANCE = 10;
 /**
  * Decodes the given session token, and extracts the session information from it
  *
@@ -20,7 +20,7 @@ function decodeSessionToken(token) {
         });
     }
     catch (error) {
-        throw new ShopifyErrors.InvalidJwtError("Failed to parse session token '" + token + "': " + error.message);
+        throw new ShopifyErrors.InvalidJwtError("Failed to parse session token '".concat(token, "': ").concat(error.message));
     }
     // The exp and nbf fields are validated by the JWT library
     if (payload.aud !== context_1.Context.API_KEY) {

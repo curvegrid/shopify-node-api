@@ -16,7 +16,7 @@ var AbandonedCheckout = /** @class */ (function (_super) {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     AbandonedCheckout.checkouts = function (_a) {
-        var session = _a.session, _b = _a.limit, limit = _b === void 0 ? null : _b, _c = _a.since_id, since_id = _c === void 0 ? null : _c, _d = _a.created_at_min, created_at_min = _d === void 0 ? null : _d, _e = _a.created_at_max, created_at_max = _e === void 0 ? null : _e, _f = _a.updated_at_min, updated_at_min = _f === void 0 ? null : _f, _g = _a.updated_at_max, updated_at_max = _g === void 0 ? null : _g, _h = _a.status, status = _h === void 0 ? null : _h, otherArgs = tslib_1.__rest(_a, ["session", "limit", "since_id", "created_at_min", "created_at_max", "updated_at_min", "updated_at_max", "status"]);
+        var session = _a.session, _b = _a.since_id, since_id = _b === void 0 ? null : _b, _c = _a.created_at_min, created_at_min = _c === void 0 ? null : _c, _d = _a.created_at_max, created_at_max = _d === void 0 ? null : _d, _e = _a.updated_at_min, updated_at_min = _e === void 0 ? null : _e, _f = _a.updated_at_max, updated_at_max = _f === void 0 ? null : _f, _g = _a.status, status = _g === void 0 ? null : _g, _h = _a.limit, limit = _h === void 0 ? null : _h, otherArgs = tslib_1.__rest(_a, ["session", "since_id", "created_at_min", "created_at_max", "updated_at_min", "updated_at_max", "status", "limit"]);
         return tslib_1.__awaiter(this, void 0, void 0, function () {
             var response;
             return tslib_1.__generator(this, function (_j) {
@@ -26,7 +26,7 @@ var AbandonedCheckout = /** @class */ (function (_super) {
                             operation: "checkouts",
                             session: session,
                             urlIds: {},
-                            params: tslib_1.__assign({ "limit": limit, "since_id": since_id, "created_at_min": created_at_min, "created_at_max": created_at_max, "updated_at_min": updated_at_min, "updated_at_max": updated_at_max, "status": status }, otherArgs),
+                            params: tslib_1.__assign({ "since_id": since_id, "created_at_min": created_at_min, "created_at_max": created_at_max, "updated_at_min": updated_at_min, "updated_at_max": updated_at_max, "status": status, "limit": limit }, otherArgs),
                             body: {},
                             entity: null,
                         })];
@@ -48,6 +48,7 @@ var AbandonedCheckout = /** @class */ (function (_super) {
         "discount_codes": discount_code_1.DiscountCode
     };
     AbandonedCheckout.PATHS = [
+        { "http_method": "get", "operation": "checkouts", "ids": [], "path": "checkouts.json" },
         { "http_method": "get", "operation": "checkouts", "ids": [], "path": "checkouts.json" }
     ];
     return AbandonedCheckout;

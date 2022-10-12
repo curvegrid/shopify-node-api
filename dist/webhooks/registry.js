@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.buildQuery = exports.buildCheckQuery = exports.WebhooksRegistry = void 0;
+exports.gdprTopics = exports.buildQuery = exports.buildCheckQuery = exports.WebhooksRegistry = void 0;
 var tslib_1 = require("tslib");
 var crypto_1 = require("crypto");
 var network_1 = require("@shopify/network");
@@ -34,7 +34,7 @@ function validateDeliveryMethod(_deliveryMethod) {
     return true;
 }
 function buildCheckQuery(topic) {
-    return "{\n    webhookSubscriptions(first: 1, topics: " + topic + ") {\n      edges {\n        node {\n          id\n          endpoint {\n            __typename\n            ... on WebhookHttpEndpoint {\n              callbackUrl\n            }\n            ... on WebhookEventBridgeEndpoint {\n              arn\n            }\n            ... on WebhookPubSubEndpoint {\n              pubSubProject\n              pubSubTopic\n            }\n          }\n        }\n      }\n    }\n  }";
+    return "{\n    webhookSubscriptions(first: 1, topics: ".concat(topic, ") {\n      edges {\n        node {\n          id\n          endpoint {\n            __typename\n            ... on WebhookHttpEndpoint {\n              callbackUrl\n            }\n            ... on WebhookEventBridgeEndpoint {\n              arn\n            }\n            ... on WebhookPubSubEndpoint {\n              pubSubProject\n              pubSubTopic\n            }\n          }\n        }\n      }\n    }\n  }");
 }
 exports.buildCheckQuery = buildCheckQuery;
 function buildQuery(topic, address, deliveryMethod, webhookId) {
@@ -43,10 +43,10 @@ function buildQuery(topic, address, deliveryMethod, webhookId) {
     validateDeliveryMethod(deliveryMethod);
     var identifier;
     if (webhookId) {
-        identifier = "id: \"" + webhookId + "\"";
+        identifier = "id: \"".concat(webhookId, "\"");
     }
     else {
-        identifier = "topic: " + topic;
+        identifier = "topic: ".concat(topic);
     }
     var mutationName;
     var webhookSubscriptionArgs;
@@ -57,13 +57,13 @@ function buildQuery(topic, address, deliveryMethod, webhookId) {
             mutationName = webhookId
                 ? 'webhookSubscriptionUpdate'
                 : 'webhookSubscriptionCreate';
-            webhookSubscriptionArgs = "{callbackUrl: \"" + address + "\"}";
+            webhookSubscriptionArgs = "{callbackUrl: \"".concat(address, "\"}");
             break;
         case types_1.DeliveryMethod.EventBridge:
             mutationName = webhookId
                 ? 'eventBridgeWebhookSubscriptionUpdate'
                 : 'eventBridgeWebhookSubscriptionCreate';
-            webhookSubscriptionArgs = "{arn: \"" + address + "\"}";
+            webhookSubscriptionArgs = "{arn: \"".concat(address, "\"}");
             break;
         case types_1.DeliveryMethod.PubSub:
             mutationName = webhookId
@@ -72,12 +72,18 @@ function buildQuery(topic, address, deliveryMethod, webhookId) {
             _a = tslib_1.__read(address
                 .replace(/^pubsub:\/\//, '')
                 .split(':'), 2), pubSubProject = _a[0], pubSubTopic = _a[1];
-            webhookSubscriptionArgs = "{pubSubProject: \"" + pubSubProject + "\",\n                                  pubSubTopic: \"" + pubSubTopic + "\"}";
+            webhookSubscriptionArgs = "{pubSubProject: \"".concat(pubSubProject, "\",\n                                  pubSubTopic: \"").concat(pubSubTopic, "\"}");
             break;
     }
-    return "\n    mutation webhookSubscription {\n      " + mutationName + "(" + identifier + ", webhookSubscription: " + webhookSubscriptionArgs + ") {\n        userErrors {\n          field\n          message\n        }\n        webhookSubscription {\n          id\n        }\n      }\n    }\n  ";
+    return "\n    mutation webhookSubscription {\n      ".concat(mutationName, "(").concat(identifier, ", webhookSubscription: ").concat(webhookSubscriptionArgs, ") {\n        userErrors {\n          field\n          message\n        }\n        webhookSubscription {\n          id\n        }\n      }\n    }\n  ");
 }
 exports.buildQuery = buildQuery;
+var gdprTopics = [
+    'CUSTOMERS_DATA_REQUEST',
+    'CUSTOMERS_REDACT',
+    'SHOP_REDACT',
+];
+exports.gdprTopics = gdprTopics;
 var WebhooksRegistry = {
     webhookRegistry: {},
     addHandler: function (topic, _a) {
@@ -101,21 +107,44 @@ var WebhooksRegistry = {
     register: function (_a) {
         var path = _a.path, topic = _a.topic, accessToken = _a.accessToken, shop = _a.shop, _b = _a.deliveryMethod, deliveryMethod = _b === void 0 ? types_1.DeliveryMethod.Http : _b;
         return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var registerReturn, client, address, checkResult, webhookId, mustRegister, node, endpointAddress, result;
+            var registerReturn, client, address, checkResult, error_1, result, webhookId, mustRegister, node, endpointAddress, result;
             return tslib_1.__generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
                         registerReturn = {};
+                        if (gdprTopics.includes(topic)) {
+                            registerReturn[topic] = {
+                                success: false,
+                                result: {
+                                    errors: [
+                                        {
+                                            message: "GDPR topic '".concat(topic, "' cannot be registered here. Please set the appropriate webhook endpoint in the 'GDPR mandatory webhooks' section of 'App setup' in the Partners Dashboard"),
+                                        },
+                                    ],
+                                },
+                            };
+                            return [2 /*return*/, registerReturn];
+                        }
                         validateDeliveryMethod(deliveryMethod);
                         client = new graphql_client_1.GraphqlClient(shop, accessToken);
                         address = deliveryMethod === types_1.DeliveryMethod.Http
-                            ? "https://" + context_1.Context.HOST_NAME + path
+                            ? "".concat(context_1.Context.HOST_SCHEME, "://").concat(context_1.Context.HOST_NAME).concat(path)
                             : path;
+                        _c.label = 1;
+                    case 1:
+                        _c.trys.push([1, 3, , 4]);
                         return [4 /*yield*/, client.query({
                                 data: buildCheckQuery(topic),
                             })];
-                    case 1:
-                        checkResult = (_c.sent());
+                    case 2:
+                        checkResult = _c.sent();
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_1 = _c.sent();
+                        result = error_1 instanceof ShopifyErrors.GraphqlQueryError ? error_1.response : {};
+                        registerReturn[topic] = { success: false, result: result };
+                        return [2 /*return*/, registerReturn];
+                    case 4:
                         mustRegister = true;
                         if (checkResult.body.data.webhookSubscriptions.edges.length) {
                             node = checkResult.body.data.webhookSubscriptions.edges[0].node;
@@ -131,24 +160,24 @@ var WebhooksRegistry = {
                                 mustRegister = false;
                             }
                         }
-                        if (!mustRegister) return [3 /*break*/, 3];
+                        if (!mustRegister) return [3 /*break*/, 6];
                         return [4 /*yield*/, client.query({
                                 data: buildQuery(topic, address, deliveryMethod, webhookId),
                             })];
-                    case 2:
+                    case 5:
                         result = _c.sent();
                         registerReturn[topic] = {
                             success: isSuccess(result.body, deliveryMethod, webhookId),
                             result: result.body,
                         };
-                        return [3 /*break*/, 4];
-                    case 3:
+                        return [3 /*break*/, 7];
+                    case 6:
                         registerReturn[topic] = {
                             success: true,
                             result: {},
                         };
-                        _c.label = 4;
-                    case 4: return [2 /*return*/, registerReturn];
+                        _c.label = 7;
+                    case 7: return [2 /*return*/, registerReturn];
                 }
             });
         });
@@ -216,7 +245,7 @@ var WebhooksRegistry = {
                         reqBody += chunk;
                     });
                     request.on('end', function () { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-                        var hmac, topic, domain, missingHeaders, statusCode, responseError, headers, generatedHash, graphqlTopic, webhookEntry, error_1;
+                        var hmac, topic, domain, missingHeaders, statusCode, responseError, headers, generatedHash, graphqlTopic, webhookEntry, error_2;
                         return tslib_1.__generator(this, function (_a) {
                             switch (_a.label) {
                                 case 0:
@@ -252,10 +281,10 @@ var WebhooksRegistry = {
                                     if (missingHeaders.length) {
                                         response.writeHead(network_1.StatusCode.BadRequest);
                                         response.end();
-                                        return [2 /*return*/, reject(new ShopifyErrors.InvalidWebhookError("Missing one or more of the required HTTP headers to process webhooks: [" + missingHeaders.join(', ') + "]"))];
+                                        return [2 /*return*/, reject(new ShopifyErrors.InvalidWebhookError("Missing one or more of the required HTTP headers to process webhooks: [".concat(missingHeaders.join(', '), "]")))];
                                     }
                                     headers = {};
-                                    generatedHash = crypto_1.createHmac('sha256', context_1.Context.API_SECRET_KEY)
+                                    generatedHash = (0, crypto_1.createHmac)('sha256', context_1.Context.API_SECRET_KEY)
                                         .update(reqBody, 'utf8')
                                         .digest('base64');
                                     if (!utils_1.default.safeCompare(generatedHash, hmac)) return [3 /*break*/, 7];
@@ -273,19 +302,19 @@ var WebhooksRegistry = {
                                     statusCode = network_1.StatusCode.Ok;
                                     return [3 /*break*/, 4];
                                 case 3:
-                                    error_1 = _a.sent();
+                                    error_2 = _a.sent();
                                     statusCode = network_1.StatusCode.InternalServerError;
-                                    responseError = error_1;
+                                    responseError = error_2;
                                     return [3 /*break*/, 4];
                                 case 4: return [3 /*break*/, 6];
                                 case 5:
-                                    statusCode = network_1.StatusCode.Forbidden;
-                                    responseError = new ShopifyErrors.InvalidWebhookError("No webhook is registered for topic " + topic);
+                                    statusCode = network_1.StatusCode.NotFound;
+                                    responseError = new ShopifyErrors.InvalidWebhookError("No webhook is registered for topic ".concat(topic));
                                     _a.label = 6;
                                 case 6: return [3 /*break*/, 8];
                                 case 7:
-                                    statusCode = network_1.StatusCode.Forbidden;
-                                    responseError = new ShopifyErrors.InvalidWebhookError("Could not validate request for topic " + topic);
+                                    statusCode = network_1.StatusCode.Unauthorized;
+                                    responseError = new ShopifyErrors.InvalidWebhookError("Could not validate request for topic ".concat(topic));
                                     _a.label = 8;
                                 case 8:
                                     response.writeHead(statusCode, headers);

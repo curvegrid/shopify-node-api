@@ -10,7 +10,7 @@ function graphqlProxy(userReq, userRes) {
         var _this = this;
         return tslib_1.__generator(this, function (_a) {
             switch (_a.label) {
-                case 0: return [4 /*yield*/, load_current_session_1.default(userReq, userRes)];
+                case 0: return [4 /*yield*/, (0, load_current_session_1.default)(userReq, userRes)];
                 case 1:
                     session = _a.sent();
                     if (!session) {

@@ -17,6 +17,7 @@ interface FindArgs {
     product_image_id?: number | string | null;
     product_id?: number | string | null;
     variant_id?: number | string | null;
+    fields?: unknown;
 }
 interface DeleteArgs {
     session: SessionInterface;
@@ -54,7 +55,6 @@ interface AllArgs {
     namespace?: unknown;
     key?: unknown;
     type?: unknown;
-    value_type?: unknown;
     fields?: unknown;
     metafield?: {
         [key: string]: unknown;
@@ -85,9 +85,9 @@ export declare class Metafield extends Base {
         [key: string]: typeof Base;
     };
     protected static PATHS: ResourcePath[];
-    static find({ session, id, article_id, blog_id, collection_id, customer_id, draft_order_id, order_id, page_id, product_image_id, product_id, variant_id }: FindArgs): Promise<Metafield | null>;
+    static find({ session, id, article_id, blog_id, collection_id, customer_id, draft_order_id, order_id, page_id, product_image_id, product_id, variant_id, fields }: FindArgs): Promise<Metafield | null>;
     static delete({ session, id, article_id, blog_id, collection_id, customer_id, draft_order_id, order_id, page_id, product_image_id, product_id, variant_id }: DeleteArgs): Promise<unknown>;
-    static all({ session, article_id, blog_id, collection_id, customer_id, draft_order_id, order_id, page_id, product_image_id, product_id, variant_id, limit, since_id, created_at_min, created_at_max, updated_at_min, updated_at_max, namespace, key, type, value_type, fields, metafield, ...otherArgs }: AllArgs): Promise<Metafield[]>;
+    static all({ session, article_id, blog_id, collection_id, customer_id, draft_order_id, order_id, page_id, product_image_id, product_id, variant_id, limit, since_id, created_at_min, created_at_max, updated_at_min, updated_at_max, namespace, key, type, fields, metafield, ...otherArgs }: AllArgs): Promise<Metafield[]>;
     static count({ session, article_id, blog_id, collection_id, customer_id, draft_order_id, order_id, page_id, product_image_id, product_id, variant_id, ...otherArgs }: CountArgs): Promise<unknown>;
     key: string | null;
     namespace: string | null;
@@ -108,7 +108,6 @@ export declare class Metafield extends Base {
     product_image_id: number | null;
     type: string | null;
     updated_at: string | null;
-    value_type: string | null;
     variant_id: number | null;
 }
 export {};

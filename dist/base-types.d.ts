@@ -1,10 +1,12 @@
 import { AuthScopes } from './auth/scopes';
 import { SessionStorage } from './auth/session/session_storage';
+import { BillingSettings } from './billing/types';
 export interface ContextParams {
     API_KEY: string;
     API_SECRET_KEY: string;
     SCOPES: string[] | AuthScopes;
     HOST_NAME: string;
+    HOST_SCHEME?: string;
     API_VERSION: ApiVersion;
     IS_EMBEDDED_APP: boolean;
     IS_PRIVATE_APP?: boolean;
@@ -12,14 +14,18 @@ export interface ContextParams {
     LOG_FILE?: string;
     USER_AGENT_PREFIX?: string;
     PRIVATE_APP_STOREFRONT_ACCESS_TOKEN?: string;
+    CUSTOM_SHOP_DOMAINS?: (RegExp | string)[];
+    BILLING?: BillingSettings;
 }
 export declare enum ApiVersion {
-    July21 = "2021-07",
     October21 = "2021-10",
     January22 = "2022-01",
     April22 = "2022-04",
+    July22 = "2022-07",
+    October22 = "2022-10",
     Unstable = "unstable"
 }
+export declare const LATEST_API_VERSION = ApiVersion.October22;
 export declare enum ShopifyHeader {
     AccessToken = "X-Shopify-Access-Token",
     StorefrontAccessToken = "X-Shopify-Storefront-Access-Token",

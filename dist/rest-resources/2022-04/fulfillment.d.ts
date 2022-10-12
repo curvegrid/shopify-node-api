@@ -1,3 +1,6 @@
+/***********************************************************************************************************************
+* This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
+***********************************************************************************************************************/
 import Base, { ResourcePath } from '../../base-rest-resource';
 import { SessionInterface } from '../../auth/session/types';
 import { ApiVersion } from '../../base-types';
@@ -29,6 +32,24 @@ interface CountArgs {
     updated_at_min?: unknown;
     updated_at_max?: unknown;
 }
+interface CancelArgs {
+    [key: string]: unknown;
+    body?: {
+        [key: string]: unknown;
+    } | null;
+}
+interface CompleteArgs {
+    [key: string]: unknown;
+    body?: {
+        [key: string]: unknown;
+    } | null;
+}
+interface OpenArgs {
+    [key: string]: unknown;
+    body?: {
+        [key: string]: unknown;
+    } | null;
+}
 interface UpdateTrackingArgs {
     [key: string]: unknown;
     body?: {
@@ -49,6 +70,9 @@ export declare class Fulfillment extends Base {
     static find({ session, id, order_id, fields }: FindArgs): Promise<Fulfillment | null>;
     static all({ session, fulfillment_order_id, order_id, created_at_max, created_at_min, fields, limit, since_id, updated_at_max, updated_at_min, ...otherArgs }: AllArgs): Promise<Fulfillment[]>;
     static count({ session, order_id, created_at_min, created_at_max, updated_at_min, updated_at_max, ...otherArgs }: CountArgs): Promise<unknown>;
+    cancel({ body, ...otherArgs }: CancelArgs): Promise<unknown>;
+    complete({ body, ...otherArgs }: CompleteArgs): Promise<unknown>;
+    open({ body, ...otherArgs }: OpenArgs): Promise<unknown>;
     update_tracking({ body, ...otherArgs }: UpdateTrackingArgs): Promise<unknown>;
     created_at: string | null;
     id: number | null;

@@ -12,6 +12,8 @@ export declare class SQLiteSessionStorage implements SessionStorage {
     storeSession(session: SessionInterface): Promise<boolean>;
     loadSession(id: string): Promise<SessionInterface | undefined>;
     deleteSession(id: string): Promise<boolean>;
+    deleteSessions(ids: string[]): Promise<boolean>;
+    findSessionsByShop(shop: string): Promise<SessionInterface[]>;
     private hasSessionTable;
     private init;
     private query;

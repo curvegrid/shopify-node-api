@@ -19,10 +19,7 @@ function stringifyQuery(query) {
 exports.stringifyQuery = stringifyQuery;
 function generateLocalHmac(_a) {
     var code = _a.code, timestamp = _a.timestamp, state = _a.state, shop = _a.shop, host = _a.host;
-    var queryString = stringifyQuery(tslib_1.__assign({ code: code,
-        timestamp: timestamp,
-        state: state,
-        shop: shop }, (host && { host: host })));
+    var queryString = stringifyQuery(tslib_1.__assign({ code: code, timestamp: timestamp, state: state, shop: shop }, (host && { host: host })));
     return crypto_1.default
         .createHmac('sha256', context_1.Context.API_SECRET_KEY)
         .update(queryString)
@@ -40,6 +37,6 @@ function validateHmac(query) {
     }
     var hmac = query.hmac;
     var localHmac = generateLocalHmac(query);
-    return safe_compare_1.default(hmac, localHmac);
+    return (0, safe_compare_1.default)(hmac, localHmac);
 }
 exports.default = validateHmac;

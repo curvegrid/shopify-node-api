@@ -1,4 +1,7 @@
 "use strict";
+/***********************************************************************************************************************
+* This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
+***********************************************************************************************************************/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.DiscountCode = void 0;
 var tslib_1 = require("tslib");

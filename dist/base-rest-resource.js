@@ -42,7 +42,7 @@ var Base = /** @class */ (function () {
             var client, path, cleanParams, key;
             return tslib_1.__generator(this, function (_b) {
                 if (context_1.Context.API_VERSION !== this.API_VERSION) {
-                    throw new error_1.RestResourceError("Current Context.API_VERSION '" + context_1.Context.API_VERSION + "' does not match resource version " + this.API_VERSION);
+                    throw new error_1.RestResourceError("Current Context.API_VERSION '".concat(context_1.Context.API_VERSION, "' does not match resource version ").concat(this.API_VERSION));
                 }
                 client = new rest_1.RestClient(session.shop, session.accessToken);
                 path = this.getPath({ http_method: http_method, operation: operation, urlIds: urlIds, entity: entity });
@@ -74,7 +74,7 @@ var Base = /** @class */ (function () {
                     case 'delete':
                         return [2 /*return*/, client.delete({ path: path, query: cleanParams })];
                     default:
-                        throw new Error("Unrecognized HTTP method \"" + http_method + "\"");
+                        throw new Error("Unrecognized HTTP method \"".concat(http_method, "\""));
                 }
                 return [2 /*return*/];
             });
@@ -114,13 +114,13 @@ var Base = /** @class */ (function () {
             specificity = path.ids.length;
             match = path.path.replace(/(<([^>]+)>)/g, 
             // eslint-disable-next-line @typescript-eslint/naming-convention
-            function (_m1, _m2, id) { return "" + pathUrlIds[id]; });
+            function (_m1, _m2, id) { return "".concat(pathUrlIds[id]); });
         });
         if (!match) {
             throw new error_1.RestResourceError('Could not find a path for request');
         }
         if (this.CUSTOM_PREFIX) {
-            return this.CUSTOM_PREFIX + "/" + match;
+            return "".concat(this.CUSTOM_PREFIX, "/").concat(match);
         }
         else {
             return match;
@@ -148,26 +148,26 @@ var Base = /** @class */ (function () {
         return instance;
     };
     Base.prototype.save = function (_a) {
-        var _b = (_a === void 0 ? {} : _a).update, update = _b === void 0 ? false : _b;
+        var _b = _a === void 0 ? {} : _a, _c = _b.update, update = _c === void 0 ? false : _c;
         return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var _c, PRIMARY_KEY, NAME, method, data, response, body;
-            var _d;
-            return tslib_1.__generator(this, function (_e) {
-                switch (_e.label) {
+            var _d, PRIMARY_KEY, NAME, method, data, response, body;
+            var _e;
+            return tslib_1.__generator(this, function (_f) {
+                switch (_f.label) {
                     case 0:
-                        _c = this.resource(), PRIMARY_KEY = _c.PRIMARY_KEY, NAME = _c.NAME;
+                        _d = this.resource(), PRIMARY_KEY = _d.PRIMARY_KEY, NAME = _d.NAME;
                         method = this[PRIMARY_KEY] ? 'put' : 'post';
-                        data = this.serialize();
+                        data = this.serialize(true);
                         return [4 /*yield*/, this.resource().request({
                                 http_method: method,
                                 operation: method,
                                 session: this.session,
                                 urlIds: {},
-                                body: (_d = {}, _d[this.resource().getJsonBodyName()] = data, _d),
+                                body: (_e = {}, _e[this.resource().getJsonBodyName()] = data, _e),
                                 entity: this,
                             })];
                     case 1:
-                        response = _e.sent();
+                        response = _f.sent();
                         body = response.body[NAME];
                         if (update && body) {
                             this.setData(body);
@@ -207,21 +207,24 @@ var Base = /** @class */ (function () {
             });
         });
     };
-    Base.prototype.serialize = function () {
+    Base.prototype.serialize = function (saving) {
+        var _this = this;
+        if (saving === void 0) { saving = false; }
         var _a = this.resource(), HAS_MANY = _a.HAS_MANY, HAS_ONE = _a.HAS_ONE, READ_ONLY_ATTRIBUTES = _a.READ_ONLY_ATTRIBUTES;
         return Object.entries(this).reduce(function (acc, _a) {
             var _b = tslib_1.__read(_a, 2), attribute = _b[0], value = _b[1];
-            if (['session'].includes(attribute) ||
-                READ_ONLY_ATTRIBUTES.includes(attribute)) {
+            if (saving &&
+                (['session'].includes(attribute) ||
+                    READ_ONLY_ATTRIBUTES.includes(attribute))) {
                 return acc;
             }
             if (attribute in HAS_MANY && value) {
                 acc[attribute] = value.reduce(function (attrAcc, entry) {
-                    return attrAcc.concat(entry.serialize ? entry.serialize() : entry);
+                    return attrAcc.concat(_this.serializeSubAttribute(entry, saving));
                 }, []);
             }
-            else if (attribute in HAS_ONE && value && value.serialize) {
-                acc[attribute] = value.serialize();
+            else if (attribute in HAS_ONE && value) {
+                acc[attribute] = _this.serializeSubAttribute(value, saving);
             }
             else {
                 acc[attribute] = value;
@@ -255,6 +258,13 @@ var Base = /** @class */ (function () {
     };
     Base.prototype.resource = function () {
         return this.constructor;
+    };
+    Base.prototype.serializeSubAttribute = function (attribute, saving) {
+        return attribute.serialize
+            ? attribute.serialize(saving)
+            : this.resource()
+                .createInstance(this.session, attribute)
+                .serialize(saving);
     };
     Base.NAME = '';
     Base.PLURAL_NAME = '';

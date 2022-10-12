@@ -73,19 +73,19 @@ var HttpClient = /** @class */ (function () {
                     case 0:
                         maxTries = params.tries ? params.tries : 1;
                         if (maxTries <= 0) {
-                            throw new ShopifyErrors.HttpRequestError("Number of tries must be >= 0, got " + maxTries);
+                            throw new ShopifyErrors.HttpRequestError("Number of tries must be >= 0, got ".concat(maxTries));
                         }
-                        userAgent = "Shopify API Library v" + version_1.SHOPIFY_API_LIBRARY_VERSION + " | Node " + process.version;
+                        userAgent = "Shopify API Library v".concat(version_1.SHOPIFY_API_LIBRARY_VERSION, " | Node ").concat(process.version);
                         if (context_1.Context.USER_AGENT_PREFIX) {
-                            userAgent = context_1.Context.USER_AGENT_PREFIX + " | " + userAgent;
+                            userAgent = "".concat(context_1.Context.USER_AGENT_PREFIX, " | ").concat(userAgent);
                         }
                         if (params.extraHeaders) {
                             if (params.extraHeaders['user-agent']) {
-                                userAgent = params.extraHeaders['user-agent'] + " | " + userAgent;
+                                userAgent = "".concat(params.extraHeaders['user-agent'], " | ").concat(userAgent);
                                 delete params.extraHeaders['user-agent'];
                             }
                             else if (params.extraHeaders['User-Agent']) {
-                                userAgent = params.extraHeaders['User-Agent'] + " | " + userAgent;
+                                userAgent = "".concat(params.extraHeaders['User-Agent'], " | ").concat(userAgent);
                             }
                         }
                         headers = tslib_1.__assign(tslib_1.__assign({}, params.extraHeaders), { 'User-Agent': userAgent });
@@ -107,10 +107,10 @@ var HttpClient = /** @class */ (function () {
                                         body = data;
                                         break;
                                 }
-                                headers = tslib_1.__assign({ 'Content-Type': type, 'Content-Length': Buffer.byteLength(body) }, params.extraHeaders);
+                                headers = tslib_1.__assign(tslib_1.__assign({}, headers), { 'Content-Type': type, 'Content-Length': Buffer.byteLength(body) });
                             }
                         }
-                        url = "https://" + this.domain + this.getRequestPath(params.path) + processed_query_1.default.stringify(params.query);
+                        url = "https://".concat(this.domain).concat(this.getRequestPath(params.path)).concat(processed_query_1.default.stringify(params.query));
                         options = {
                             method: params.method.toString(),
                             headers: headers,
@@ -142,7 +142,7 @@ var HttpClient = /** @class */ (function () {
                     case 6:
                         // We're set to multiple tries but ran out
                         if (maxTries > 1) {
-                            throw new ShopifyErrors.HttpMaxRetriesError("Exceeded maximum retry count of " + maxTries + ". Last message: " + error_1.message);
+                            throw new ShopifyErrors.HttpMaxRetriesError("Exceeded maximum retry count of ".concat(maxTries, ". Last message: ").concat(error_1.message));
                         }
                         _b.label = 7;
                     case 7: 
@@ -158,109 +158,114 @@ var HttpClient = /** @class */ (function () {
         });
     };
     HttpClient.prototype.getRequestPath = function (path) {
-        return "/" + path.replace(/^\//, '');
+        return "/".concat(path.replace(/^\//, ''));
     };
     HttpClient.prototype.doRequest = function (url, options) {
         return tslib_1.__awaiter(this, void 0, void 0, function () {
-            var _this = this;
+            var response, body, deprecation, depHash, stack, log, errorMessages, errorMessage, headers, code, statusText, retryAfter, error_2;
             return tslib_1.__generator(this, function (_a) {
-                return [2 /*return*/, node_fetch_1.default(url, options)
-                        .then(function (response) { return tslib_1.__awaiter(_this, void 0, void 0, function () {
-                        var body, deprecation, depHash, stack, log, errorMessages, errorMessage, headers, code, statusText, retryAfter;
-                        return tslib_1.__generator(this, function (_a) {
-                            switch (_a.label) {
-                                case 0: return [4 /*yield*/, response.json()];
-                                case 1:
-                                    body = _a.sent();
-                                    if (response.ok) {
-                                        if (response.headers &&
-                                            response.headers.has('X-Shopify-API-Deprecated-Reason')) {
-                                            deprecation = {
-                                                message: response.headers.get('X-Shopify-API-Deprecated-Reason'),
-                                                path: url,
-                                            };
-                                            depHash = crypto_1.default
-                                                .createHash('md5')
-                                                .update(JSON.stringify(deprecation))
-                                                .digest('hex');
-                                            if (!Object.keys(this.LOGGED_DEPRECATIONS).includes(depHash) ||
-                                                Date.now() - this.LOGGED_DEPRECATIONS[depHash] >=
-                                                    HttpClient.DEPRECATION_ALERT_DELAY) {
-                                                this.LOGGED_DEPRECATIONS[depHash] = Date.now();
-                                                if (context_1.Context.LOG_FILE) {
-                                                    stack = new Error().stack;
-                                                    log = "API Deprecation Notice " + new Date().toLocaleString() + " : " + JSON.stringify(deprecation) + "\n    Stack Trace: " + stack + "\n";
-                                                    fs_1.default.writeFileSync(context_1.Context.LOG_FILE, log, {
-                                                        flag: 'a',
-                                                        encoding: 'utf-8',
-                                                    });
-                                                }
-                                                else {
-                                                    console.warn('API Deprecation Notice:', deprecation);
-                                                }
-                                            }
-                                        }
-                                        return [2 /*return*/, {
-                                                body: body,
-                                                headers: response.headers,
-                                            }];
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 3, , 4]);
+                        return [4 /*yield*/, (0, node_fetch_1.default)(url, options)];
+                    case 1:
+                        response = _a.sent();
+                        return [4 /*yield*/, response.json().catch(function () { return ({}); })];
+                    case 2:
+                        body = _a.sent();
+                        if (response.ok) {
+                            if (response.headers &&
+                                response.headers.has('X-Shopify-API-Deprecated-Reason')) {
+                                deprecation = {
+                                    message: response.headers.get('X-Shopify-API-Deprecated-Reason'),
+                                    path: url,
+                                };
+                                if (options.body) {
+                                    // This can only be a string, since we're always converting the body before calling this method
+                                    deprecation.body = "".concat(options.body.substring(0, 100), "...");
+                                }
+                                depHash = crypto_1.default
+                                    .createHash('md5')
+                                    .update(JSON.stringify(deprecation))
+                                    .digest('hex');
+                                if (!Object.keys(this.LOGGED_DEPRECATIONS).includes(depHash) ||
+                                    Date.now() - this.LOGGED_DEPRECATIONS[depHash] >=
+                                        HttpClient.DEPRECATION_ALERT_DELAY) {
+                                    this.LOGGED_DEPRECATIONS[depHash] = Date.now();
+                                    if (context_1.Context.LOG_FILE) {
+                                        stack = new Error().stack;
+                                        log = "API Deprecation Notice ".concat(new Date().toLocaleString(), " : ").concat(JSON.stringify(deprecation), "\n    Stack Trace: ").concat(stack, "\n");
+                                        fs_1.default.writeFileSync(context_1.Context.LOG_FILE, log, {
+                                            flag: 'a',
+                                            encoding: 'utf-8',
+                                        });
                                     }
                                     else {
-                                        errorMessages = [];
-                                        if (body.errors) {
-                                            errorMessages.push(JSON.stringify(body.errors, null, 2));
-                                        }
-                                        if (response.headers && response.headers.get('x-request-id')) {
-                                            errorMessages.push("If you report this error, please include this id: " + response.headers.get('x-request-id'));
-                                        }
-                                        errorMessage = errorMessages.length
-                                            ? ":\n" + errorMessages.join('\n')
-                                            : '';
-                                        headers = response.headers.raw();
-                                        code = response.status;
-                                        statusText = response.statusText;
-                                        switch (true) {
-                                            case response.status === network_1.StatusCode.TooManyRequests: {
-                                                retryAfter = response.headers.get('Retry-After');
-                                                throw new ShopifyErrors.HttpThrottlingError({
-                                                    message: "Shopify is throttling requests" + errorMessage,
-                                                    code: code,
-                                                    statusText: statusText,
-                                                    body: body,
-                                                    headers: headers,
-                                                    retryAfter: retryAfter ? parseFloat(retryAfter) : undefined,
-                                                });
-                                            }
-                                            case response.status >= network_1.StatusCode.InternalServerError:
-                                                throw new ShopifyErrors.HttpInternalError({
-                                                    message: "Shopify internal error" + errorMessage,
-                                                    code: code,
-                                                    statusText: statusText,
-                                                    body: body,
-                                                    headers: headers,
-                                                });
-                                            default:
-                                                throw new ShopifyErrors.HttpResponseError({
-                                                    message: "Received an error response (" + response.status + " " + response.statusText + ") from Shopify" + errorMessage,
-                                                    code: code,
-                                                    statusText: statusText,
-                                                    body: body,
-                                                    headers: headers,
-                                                });
-                                        }
+                                        console.warn('API Deprecation Notice:', deprecation);
                                     }
-                                    return [2 /*return*/];
+                                }
                             }
-                        });
-                    }); })
-                        .catch(function (error) {
-                        if (error instanceof ShopifyErrors.ShopifyError) {
-                            throw error;
+                            return [2 /*return*/, {
+                                    body: body,
+                                    headers: response.headers,
+                                }];
                         }
                         else {
-                            throw new ShopifyErrors.HttpRequestError("Failed to make Shopify HTTP request: " + error);
+                            errorMessages = [];
+                            if (body.errors) {
+                                errorMessages.push(JSON.stringify(body.errors, null, 2));
+                            }
+                            if (response.headers && response.headers.get('x-request-id')) {
+                                errorMessages.push("If you report this error, please include this id: ".concat(response.headers.get('x-request-id')));
+                            }
+                            errorMessage = errorMessages.length
+                                ? ":\n".concat(errorMessages.join('\n'))
+                                : '';
+                            headers = response.headers.raw();
+                            code = response.status;
+                            statusText = response.statusText;
+                            switch (true) {
+                                case response.status === network_1.StatusCode.TooManyRequests: {
+                                    retryAfter = response.headers.get('Retry-After');
+                                    throw new ShopifyErrors.HttpThrottlingError({
+                                        message: "Shopify is throttling requests".concat(errorMessage),
+                                        code: code,
+                                        statusText: statusText,
+                                        body: body,
+                                        headers: headers,
+                                        retryAfter: retryAfter ? parseFloat(retryAfter) : undefined,
+                                    });
+                                }
+                                case response.status >= network_1.StatusCode.InternalServerError:
+                                    throw new ShopifyErrors.HttpInternalError({
+                                        message: "Shopify internal error".concat(errorMessage),
+                                        code: code,
+                                        statusText: statusText,
+                                        body: body,
+                                        headers: headers,
+                                    });
+                                default:
+                                    throw new ShopifyErrors.HttpResponseError({
+                                        message: "Received an error response (".concat(response.status, " ").concat(response.statusText, ") from Shopify").concat(errorMessage),
+                                        code: code,
+                                        statusText: statusText,
+                                        body: body,
+                                        headers: headers,
+                                    });
+                            }
                         }
-                    })];
+                        return [3 /*break*/, 4];
+                    case 3:
+                        error_2 = _a.sent();
+                        if (error_2 instanceof ShopifyErrors.ShopifyError) {
+                            throw error_2;
+                        }
+                        else {
+                            throw new ShopifyErrors.HttpRequestError("Failed to make Shopify HTTP request: ".concat(error_2));
+                        }
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
+                }
             });
         });
     };

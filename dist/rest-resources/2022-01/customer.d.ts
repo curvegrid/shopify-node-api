@@ -1,3 +1,6 @@
+/***********************************************************************************************************************
+* This file is auto-generated. If you have an issue, please create a GitHub issue.                                     *
+***********************************************************************************************************************/
 import Base, { ResourcePath } from '../../base-rest-resource';
 import { SessionInterface } from '../../auth/session/types';
 import { ApiVersion } from '../../base-types';
@@ -6,6 +9,10 @@ interface FindArgs {
     session: SessionInterface;
     id: number | string;
     fields?: unknown;
+}
+interface DeleteArgs {
+    session: SessionInterface;
+    id: number | string;
 }
 interface AllArgs {
     [key: string]: unknown;
@@ -61,6 +68,7 @@ export declare class Customer extends Base {
     };
     protected static PATHS: ResourcePath[];
     static find({ session, id, fields }: FindArgs): Promise<Customer | null>;
+    static delete({ session, id }: DeleteArgs): Promise<unknown>;
     static all({ session, ids, since_id, created_at_min, created_at_max, updated_at_min, updated_at_max, limit, fields, ...otherArgs }: AllArgs): Promise<Customer[]>;
     static count({ session, ...otherArgs }: CountArgs): Promise<unknown>;
     static orders({ session, id, status, ...otherArgs }: OrdersArgs): Promise<unknown>;
@@ -90,6 +98,8 @@ export declare class Customer extends Base {
     multipass_identifier: string | null;
     note: string | null;
     orders_count: number | null;
+    password: string | null;
+    password_confirmation: string | null;
     phone: string | null;
     sms_marketing_consent: {
         [key: string]: unknown;

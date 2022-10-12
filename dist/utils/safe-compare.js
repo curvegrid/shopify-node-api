@@ -10,23 +10,25 @@ var ShopifyErrors = tslib_1.__importStar(require("../error"));
  * @param strB any string, array of strings, or object with string values
  */
 function safeCompare(strA, strB) {
-    if (typeof strA === typeof strB) {
-        var buffA = void 0;
-        var buffB = void 0;
-        if (typeof strA === 'object' && typeof strB === 'object') {
-            buffA = Buffer.from(JSON.stringify(strA));
-            buffB = Buffer.from(JSON.stringify(strB));
-        }
-        else {
-            buffA = Buffer.from(strA);
-            buffB = Buffer.from(strB);
-        }
-        if (buffA.length === buffB.length) {
-            return crypto_1.default.timingSafeEqual(buffA, buffB);
-        }
+    var buffA;
+    var buffB;
+    if (typeof strA !== typeof strB) {
+        throw new ShopifyErrors.SafeCompareError("Mismatched data types provided: ".concat(typeof strA, " and ").concat(typeof strB));
+    }
+    if (typeof strA === 'object') {
+        buffA = Buffer.from(JSON.stringify(strA));
     }
     else {
-        throw new ShopifyErrors.SafeCompareError("Mismatched data types provided: " + typeof strA + " and " + typeof strB);
+        buffA = Buffer.from(strA);
+    }
+    if (typeof strB === 'object') {
+        buffB = Buffer.from(JSON.stringify(strB));
+    }
+    else {
+        buffB = Buffer.from(strB);
+    }
+    if (buffA.length === buffB.length) {
+        return crypto_1.default.timingSafeEqual(buffA, buffB);
     }
     return false;
 }

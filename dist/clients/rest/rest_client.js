@@ -30,11 +30,13 @@ var RestClient = /** @class */ (function (_super) {
                             : this.accessToken, _c), params.extraHeaders);
                         return [4 /*yield*/, _super.prototype.request.call(this, params)];
                     case 1:
-                        ret = (_e.sent());
+                        ret = _e.sent();
                         link = ret.headers.get('link');
                         if (link !== undefined) {
                             pageInfo = {
-                                limit: ((_a = params.query) === null || _a === void 0 ? void 0 : _a.limit) ? (_b = params.query) === null || _b === void 0 ? void 0 : _b.limit.toString() : RestClient.DEFAULT_LIMIT,
+                                limit: ((_a = params.query) === null || _a === void 0 ? void 0 : _a.limit)
+                                    ? (_b = params.query) === null || _b === void 0 ? void 0 : _b.limit.toString()
+                                    : RestClient.DEFAULT_LIMIT,
                             };
                             if (link) {
                                 links = link.split(', ');
@@ -84,10 +86,10 @@ var RestClient = /** @class */ (function (_super) {
     RestClient.prototype.getRequestPath = function (path) {
         var cleanPath = _super.prototype.getRequestPath.call(this, path);
         if (cleanPath.startsWith('/admin')) {
-            return cleanPath.replace(/\.json$/, '') + ".json";
+            return "".concat(cleanPath.replace(/\.json$/, ''), ".json");
         }
         else {
-            return "/admin/api/" + context_1.Context.API_VERSION + cleanPath.replace(/\.json$/, '') + ".json";
+            return "/admin/api/".concat(context_1.Context.API_VERSION).concat(cleanPath.replace(/\.json$/, ''), ".json");
         }
     };
     RestClient.prototype.buildRequestParams = function (newPageUrl) {

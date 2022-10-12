@@ -19,7 +19,7 @@ function withSession(_a) {
                     if (!req || !res) {
                         throw new ShopifyErrors.MissingRequiredArgument('Please pass in both the "request" and "response" objects.');
                     }
-                    return [4 /*yield*/, load_current_session_1.default(req, res)];
+                    return [4 /*yield*/, (0, load_current_session_1.default)(req, res)];
                 case 1:
                     session = _b.sent();
                     return [3 /*break*/, 4];
@@ -27,7 +27,7 @@ function withSession(_a) {
                     if (!shop) {
                         throw new ShopifyErrors.MissingRequiredArgument('Please pass in a value for "shop"');
                     }
-                    return [4 /*yield*/, load_offline_session_1.default(shop)];
+                    return [4 /*yield*/, (0, load_offline_session_1.default)(shop)];
                 case 3:
                     session = _b.sent();
                     _b.label = 4;
@@ -52,7 +52,7 @@ function withSession(_a) {
                                     session: session,
                                 }];
                         default:
-                            throw new ShopifyErrors.UnsupportedClientType("\"" + clientType + "\" is an unsupported clientType. Please use \"rest\" or \"graphql\".");
+                            throw new ShopifyErrors.UnsupportedClientType("\"".concat(clientType, "\" is an unsupported clientType. Please use \"rest\" or \"graphql\"."));
                     }
                     return [2 /*return*/];
             }
