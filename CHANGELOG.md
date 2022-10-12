@@ -8,6 +8,10 @@ and adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 ## Unreleased
 - Add optional `isOnline` parameter to `Auth` method `validateAuthCallback` [#272](https://github.com/Shopify/shopify-api-node/pull/272)
 
+## [5.2.0] - 2022-10-04
+
+- Added support for the `2022-10` API version [#535](https://github.com/Shopify/shopify-api-node/pull/535)
+
 ## [5.1.0] - 2022-09-19
 
 - Increased tolerance for expired JWT session tokens from 5s to 10s [#462](https://github.com/Shopify/shopify-api-node/pull/462)
