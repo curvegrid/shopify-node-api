@@ -52,6 +52,7 @@ export function begin(config: ConfigInterface) {
     );
 
     const log = logger(config);
+    log.error('Hello Shopify');
     log.info('Beginning OAuth', {shop, isOnline, callbackPath});
 
     const cleanShop = sanitizeShop(config)(shop, true)!;
