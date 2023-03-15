@@ -131,7 +131,9 @@ export function callback(config: ConfigInterface) {
       secure: true,
     });
 
-    const stateFromCookie = await cookies.getAndVerify(STATE_COOKIE_NAME);
+    const stateFromCookie = isOnlineParam
+      ? await cookies.getAndVerify(STATE_COOKIE_NAME)
+      : '';
     cookies.deleteCookie(STATE_COOKIE_NAME);
     if (!stateFromCookie) {
       log.error('Could not find OAuth cookie', {shop});
@@ -142,7 +144,10 @@ export function callback(config: ConfigInterface) {
     }
 
     const authQuery: AuthQuery = Object.fromEntries(query.entries());
-    if (!(await validQuery({config, query: authQuery, stateFromCookie}))) {
+    if (
+      isOnlineParam &&
+      !(await validQuery({config, query: authQuery, stateFromCookie}))
+    ) {
       log.error('Invalid OAuth callback', {shop, stateFromCookie});
 
       throw new ShopifyErrors.InvalidOAuthError('Invalid OAuth callback.');
