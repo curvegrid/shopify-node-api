@@ -135,7 +135,7 @@ export function callback(config: ConfigInterface) {
       ? await cookies.getAndVerify(STATE_COOKIE_NAME)
       : '';
     cookies.deleteCookie(STATE_COOKIE_NAME);
-    if (!stateFromCookie) {
+    if (stateFromCookie === undefined) {
       log.error('Could not find OAuth cookie', {shop});
 
       throw new ShopifyErrors.CookieNotFound(
