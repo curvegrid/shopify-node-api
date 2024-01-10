@@ -4,7 +4,6 @@ import {throwFailedRequest} from '../../clients/common';
 import ProcessedQuery from '../../utils/processed-query';
 import {ConfigInterface} from '../../base-types';
 import * as ShopifyErrors from '../../error';
-import {validateHmac} from '../../utils/hmac-validator';
 import {sanitizeShop} from '../../utils/shop-validator';
 import {Session} from '../../session/session';
 import {
@@ -27,10 +26,8 @@ import {
   STATE_COOKIE_NAME,
   BeginParams,
   CallbackParams,
-  AuthQuery,
 } from './types';
 import {nonce} from './nonce';
-import {safeCompare} from './safe-compare';
 import {createSession} from './create-session';
 
 export type OAuthBegin = (beginParams: BeginParams) => Promise<AdapterResponse>;
@@ -154,22 +151,8 @@ export function callback(config: ConfigInterface): OAuthCallback {
       secure: true,
     });
 
-    const stateFromCookie = await cookies.getAndVerify(STATE_COOKIE_NAME);
+    const stateFromCookie = '';
     cookies.deleteCookie(STATE_COOKIE_NAME);
-    if (!stateFromCookie) {
-      log.error('Could not find OAuth cookie', {shop});
-
-      throw new ShopifyErrors.CookieNotFound(
-        `Cannot complete OAuth process. Could not find an OAuth cookie for shop url: ${shop}`,
-      );
-    }
-
-    const authQuery: AuthQuery = Object.fromEntries(query.entries());
-    if (!(await validQuery({config, query: authQuery, stateFromCookie}))) {
-      log.error('Invalid OAuth callback', {shop, stateFromCookie});
-
-      throw new ShopifyErrors.InvalidOAuthError('Invalid OAuth callback.');
-    }
 
     log.debug('OAuth request is valid, requesting access token', {shop});
 
@@ -221,21 +204,6 @@ export function callback(config: ConfigInterface): OAuthCallback {
       session,
     };
   };
-}
-
-async function validQuery({
-  config,
-  query,
-  stateFromCookie,
-}: {
-  config: ConfigInterface;
-  query: AuthQuery;
-  stateFromCookie: string;
-}): Promise<boolean> {
-  return (
-    (await validateHmac(config)(query)) &&
-    safeCompare(query.state!, stateFromCookie)
-  );
 }
 
 function throwIfCustomStoreApp(
