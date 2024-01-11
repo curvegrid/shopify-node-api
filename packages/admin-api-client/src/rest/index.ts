@@ -1,1 +1,0 @@
-export { createAdminRestApiClient } from "./client";
